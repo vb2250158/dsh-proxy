@@ -43,16 +43,22 @@ export const LOOPBACK_TRUST_PATCHES: readonly ScriptPatch[] = [
     // dsh-client-connection: the one place `connection.isLoopback` is born;
     // forcing true makes every consumer (settings mirror persistence,
     // settings-general document store, deliverables open-file) treat the
-    // proxied origin as host-trusted.
+    // proxied origin as host-trusted. The needle tracks the dsh-client-connection
+    // bundle's current expression (0.1.2 added a leading `ownsHost` disjunct —
+    // `transport?.ownsHost === true || pageLocation === void 0 || isLoopbackHostname(...)`);
+    // a new DSH release may shift it again, degrading to remote behavior rather
+    // than erroring differently than direct LAN access.
     needle:
-      'isLoopback: pageLocation === void 0 || isLoopbackHostname(pageLocation.hostname),',
+      'isLoopback: transport?.ownsHost === true || pageLocation === void 0 || isLoopbackHostname(pageLocation.hostname),',
     replacement: 'isLoopback: true,',
     purpose: 'connection.isLoopback (settings mirror stays unavailable)',
   },
   {
     // dsh-client-ui-settings: defense in depth — if the connection shape ever
-    // changes upstream, the two mirror constructions keep their host mode.
-    needle: 'connection.isLoopback ? "host" : "memory"',
+    // changes upstream, the settings describe mirror keeps its host mode. The
+    // needle tracks the current expression (`ctx.remote.$host.isLoopback`, the
+    // connection's persisted isLoopback consumed in the settings plugin).
+    needle: 'ctx.remote.$host.isLoopback ? "host" : "memory"',
     replacement: '"host"',
     purpose: 'settings describe mirror persistence',
   },

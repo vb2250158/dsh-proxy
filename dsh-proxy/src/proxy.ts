@@ -37,6 +37,7 @@ import httpProxy from 'http-proxy'
 import { Authenticator } from './session.ts'
 import { injectPolyfill, RANDOM_UUID_POLYFILL } from './polyfill.ts'
 import { isJavaScriptContentType, patchClientScript } from './clientpatch.ts'
+import { attachBodyTransform } from './compression.ts'
 
 export interface LanProxyOptions {
   /** Interface the proxy binds (0.0.0.0 for LAN access). */
@@ -118,72 +119,37 @@ export function startLanProxy(options: LanProxyOptions): LanProxyHandle {
 
   // Inject the randomUUID polyfill into proxied HTML documents, and rewrite
   // served JavaScript so the client treats the authenticated proxy as
-  // host-trusted (see clientpatch.ts). Responses stream chunk by chunk, and
-  // the JS needles can span chunks, so the JS branch buffers the whole body;
-  // content-length is dropped in both cases (the chunked stream then carries
-  // the body).
+  // host-trusted (see clientpatch.ts). The upstream DSH server compresses its
+  // responses (gzip by default), so these plain-text rewrites run through a
+  // compression-aware pipeline that buffers the response, decompresses by its
+  // Content-Encoding, applies the rewrite on the plain text, then recompresses
+  // by the original encoding (see compression.ts). content-length is dropped
+  // because the rewrite changes the body length; the chunked stream then
+  // carries the body.
   proxy.on('proxyRes', (proxyRes, _req, res) => {
     const contentType = String(proxyRes.headers['content-type'] ?? '')
-    if (proxyRes.headers['content-encoding']) return
-    if (contentType.includes('text/html')) {
-      delete proxyRes.headers['content-length']
-      res.removeHeader('content-length')
-      let injected = false
-      // The interceptor must be attached before any data flows; http-proxy
-      // emits proxyRes before piping, so hooking res.write here is safe.
-      const origWrite = res.write.bind(res)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(res as any).write = (chunk: any, ...rest: any[]) => {
-        if (!injected) {
-          injected = true
-          const text = Buffer.isBuffer(chunk) ? chunk.toString('utf8') : String(chunk)
-          chunk = Buffer.from(injectPolyfill(text, RANDOM_UUID_POLYFILL))
-        }
-        return origWrite(chunk, ...rest)
+    const isHtml = contentType.includes('text/html')
+    const isJs = isJavaScriptContentType(contentType)
+    if (!isHtml && !isJs) return
+
+    attachBodyTransform(res, proxyRes, (plain) => {
+      const text = plain.toString('utf8')
+      // HTML: inject the randomUUID polyfill.
+      if (isHtml) {
+        return Buffer.from(injectPolyfill(text, RANDOM_UUID_POLYFILL))
       }
-      return
-    }
-    // Applied unconditionally: the Host/Origin rewrite already lets the
-    // server-side fence treat proxied traffic as loopback, so withholding the
-    // client-side alignment would only leave the UI degraded (the pre-0.1.1
-    // behavior) while the wire stayed fully open. Basic Auth remains the one
-    // security barrier for the whole surface.
-    if (!isJavaScriptContentType(contentType)) return
-    delete proxyRes.headers['content-length']
-    res.removeHeader('content-length')
-    const chunks: Buffer[] = []
-    let bufferedBytes = 0
-    let ended = false
-    const origWrite = res.write.bind(res)
-    const origEnd = res.end.bind(res)
-    const capture = (chunk: any): void => {
-      const part =
-        typeof chunk === 'string'
-          ? Buffer.from(chunk, 'utf8')
-          : ArrayBuffer.isView(chunk) || chunk instanceof ArrayBuffer
-            ? Buffer.from(chunk as Uint8Array)
-            : null
-      if (part !== null) {
-        chunks.push(part)
-        bufferedBytes += part.length
-      }
-    }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(res as any).write = (chunk: any, ...rest: any[]): boolean => {
-      capture(chunk)
-      return true
-    }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(res as any).end = (chunk?: any, ...rest: any[]) => {
-      if (ended) return
-      ended = true
-      if (chunk !== undefined && chunk !== null && typeof chunk !== 'function') capture(chunk)
-      const text = Buffer.concat(chunks).toString('utf8')
+      // JS: rewrite the loopback-trust needles (applied unconditionally — the
+      // Host/Origin rewrite already lets the server-side fence treat proxied
+      // traffic as loopback, so withholding only the client-side alignment
+      // would leave the UI degraded). Nothing matched means no rewrite needed:
+      // return null to passthrough without recompressing.
       const { code, matched } = patchClientScript(text)
-      if (matched.length > 0) log('info', `loopback-trust patch applied: ${matched.join(', ')}`)
-      const callback = [chunk, ...rest].find((arg) => typeof arg === 'function')
-      return callback === undefined ? origEnd(Buffer.from(code)) : origEnd(Buffer.from(code), callback)
-    }
+      if (matched.length > 0) {
+        log('info', `loopback-trust patch applied: ${matched.join(', ')}`)
+        return Buffer.from(code)
+      }
+      return null
+    })
   })
 
   const alignOrigin = (req: http.IncomingMessage): void => {

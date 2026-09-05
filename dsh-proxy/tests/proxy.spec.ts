@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import http from 'node:http'
+import zlib from 'node:zlib'
 import type { AddressInfo } from 'node:net'
 import WebSocket, { WebSocketServer } from 'ws'
 import { startLanProxy, type LanProxyHandle } from '../src/proxy.ts'
@@ -10,10 +11,28 @@ const PASS = 's3cret'
 const UPSTREAM_HTML =
   '<!doctype html><html><head><title>up</title></head><body>UPSTREAM_MARKER</body></html>'
 const CONNECTION_NEEDLE =
-  'isLoopback: pageLocation === void 0 || isLoopbackHostname(pageLocation.hostname),'
+  'isLoopback: transport?.ownsHost === true || pageLocation === void 0 || isLoopbackHostname(pageLocation.hostname),'
 
 const basic = (username = USER, password = PASS): string =>
   `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`
+
+/** Raw node HTTP GET that returns the exact wire bytes (no auto-decompression). */
+function rawGet(path: string, extraHeaders: Record<string, string> = {}): Promise<{ status: number; headers: http.IncomingHttpHeaders; body: Buffer }> {
+  return new Promise((resolve, reject) => {
+    const req = http.request(
+      { host: '127.0.0.1', port: world.proxyPort, path, headers: { 'accept-encoding': '', ...extraHeaders } },
+      (res) => {
+        const chunks: Buffer[] = []
+        res.on('data', (c: Buffer) => chunks.push(c))
+        res.on('end', () =>
+          resolve({ status: res.statusCode ?? 0, headers: res.headers, body: Buffer.concat(chunks) }),
+        )
+      },
+    )
+    req.on('error', reject)
+    req.end()
+  })
+}
 
 interface World {
   upstreamPort: number
@@ -60,6 +79,20 @@ beforeEach(async () => {
       res.writeHead(200, { 'content-type': 'text/javascript; charset=utf-8' })
       res.write(code.slice(0, 20))
       res.end(code.slice(20))
+      return
+    }
+    if (pathname === '/plugins/x/client.js.zipped') {
+      // Compressed JS: the loopback-trust patch must still apply after
+      // decompressing by Content-Encoding.
+      const code = `const a=1;${CONNECTION_NEEDLE}\nconst b=2;`
+      res.writeHead(200, { 'content-type': 'text/javascript; charset=utf-8', 'content-encoding': 'gzip' })
+      res.end(zlib.gzipSync(code))
+      return
+    }
+    if (pathname === '/zipped') {
+      // Compressed HTML: the randomUUID polyfill must still be injected.
+      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'content-encoding': 'gzip' })
+      res.end(zlib.gzipSync(UPSTREAM_HTML))
       return
     }
     res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' })
@@ -181,6 +214,26 @@ describe('content handling', () => {
     expect(code).not.toContain('isLoopbackHostname')
     expect(code).toContain('isLoopback: true,')
     // The rewritten body must stay valid around the patch point.
+    expect(code).toBe('const a=1;isLoopback: true,\nconst b=2;')
+  })
+
+  it('injects the HTML polyfill into gzip-compressed HTML', async () => {
+    const res = await rawGet('/zipped', { authorization: basic() })
+    expect(res.status).toBe(200)
+    // Still served gzip-compressed on the wire after the recompress pass.
+    expect(res.headers['content-encoding']).toBe('gzip')
+    const html = zlib.gunzipSync(res.body).toString('utf8')
+    expect(html).toContain('UPSTREAM_MARKER')
+    expect(html).toContain(RANDOM_UUID_POLYFILL)
+  })
+
+  it('applies the JavaScript loopback-trust patch to gzip-compressed scripts', async () => {
+    const res = await rawGet('/plugins/x/client.js.zipped', { authorization: basic() })
+    expect(res.status).toBe(200)
+    expect(res.headers['content-encoding']).toBe('gzip')
+    const code = zlib.gunzipSync(res.body).toString('utf8')
+    expect(code).toContain('isLoopback: true,')
+    expect(code).not.toContain(CONNECTION_NEEDLE)
     expect(code).toBe('const a=1;isLoopback: true,\nconst b=2;')
   })
 

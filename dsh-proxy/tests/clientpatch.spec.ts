@@ -6,8 +6,8 @@ import {
 } from '../src/clientpatch.ts'
 
 const CONNECTION_NEEDLE =
-  'isLoopback: pageLocation === void 0 || isLoopbackHostname(pageLocation.hostname),'
-const SETTINGS_NEEDLE = 'connection.isLoopback ? "host" : "memory"'
+  'isLoopback: transport?.ownsHost === true || pageLocation === void 0 || isLoopbackHostname(pageLocation.hostname),'
+const SETTINGS_NEEDLE = 'ctx.remote.$host.isLoopback ? "host" : "memory"'
 
 describe('isJavaScriptContentType', () => {
   it('matches the javascript content types the harness serves', () => {
@@ -26,7 +26,7 @@ describe('isJavaScriptContentType', () => {
 
 describe('patchClientScript', () => {
   it('rewrites the connection bundle isLoopback derivation to true', () => {
-    const code = `var x=1;{api,isLoopback: pageLocation === void 0 || isLoopbackHostname(pageLocation.hostname),hostDescription:{}}`
+    const code = `var x=1;{api,isLoopback: transport?.ownsHost === true || pageLocation === void 0 || isLoopbackHostname(pageLocation.hostname),hostDescription:{}}`
     const { code: out, matched } = patchClientScript(code)
     expect(out).toBe('var x=1;{api,isLoopback: true,hostDescription:{}}')
     expect(matched).toEqual(['connection.isLoopback (settings mirror stays unavailable)'])
