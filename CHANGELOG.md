@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.9
+
+- Add an optional authenticated HTTPS listener for LAN browser microphone access, with HTTPS QR codes and a public CA download/fingerprint.
+- Close both listeners atomically on start failure and stop. Keep certificate private keys outside profile responses and repositories.
+
 ## 0.1.8
 
 - Show live LAN browser URLs and locally generated QR codes in proxy settings. Codes contain only the URL; browser login still uses the configured username and password.

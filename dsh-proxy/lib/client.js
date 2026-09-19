@@ -2330,6 +2330,11 @@ function SettingsSection({ rpc, t }) {
   ] }) : status !== null ? /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_jsx_runtime2.Fragment, { children: [
     /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { style: { display: "grid", gap: "10px", marginBottom: "16px" }, children: [
       /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("strong", { children: t("status.lanUrls") }),
+      status.caCertificateUrl ? /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { style: { display: "grid", gap: "8px" }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: status.caCertificateUrl, children: t("status.ca") }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: t("status.trust") }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("code", { style: { overflowWrap: "anywhere" }, children: status.caFingerprint })
+      ] }) : null,
       status.lanUrls.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_jsx_runtime2.Fragment, { children: [
         /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(AccessLinks, { urls: status.lanUrls, errorText: t("status.qrError") }),
         /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "dsh_lanproxy_hint", children: t("status.scan") })
@@ -2476,6 +2481,8 @@ function SettingsSection({ rpc, t }) {
 // src/client/locales.ts
 var NS = "dsh-proxy";
 var zh = {
+  "status.ca": "\u4E0B\u8F7D\u5B89\u5353 CA \u8BC1\u4E66",
+  "status.trust": "\u9996\u6B21\u4F7F\u7528\uFF1A\u4E0B\u8F7D\u8BC1\u4E66\uFF0C\u5728\u5B89\u5353\u8BBE\u7F6E\u4E2D\u5B89\u88C5\u4E3A CA \u8BC1\u4E66\uFF0C\u518D\u626B\u63CF HTTPS \u4E8C\u7EF4\u7801\u3002\u5B89\u88C5\u524D\u6838\u5BF9\u4E0B\u65B9 SHA-256 \u6307\u7EB9\u3002",
   "status.lanUrls": "\u6D4F\u89C8\u5668\u8BBF\u95EE",
   "status.noLanUrls": "\u6682\u65E0\u53EF\u7528\u7684\u5C40\u57DF\u7F51\u5730\u5740",
   "status.scan": "\u624B\u673A\u626B\u7801\u540E\u5728\u6D4F\u89C8\u5668\u4E2D\u6253\u5F00\uFF0C\u4F7F\u7528\u8D26\u53F7\u5BC6\u7801\u767B\u5F55\u3002",
@@ -2525,6 +2532,8 @@ var zh = {
   "form.failed": "\u4FDD\u5B58\u5931\u8D25"
 };
 var en = {
+  "status.ca": "Download Android CA certificate",
+  "status.trust": "First use: install this CA certificate in Android settings, then scan the HTTPS code. Verify the SHA-256 fingerprint below.",
   "status.lanUrls": "Browser access",
   "status.noLanUrls": "No LAN address available",
   "status.scan": "Scan on your phone, open in a browser and sign in with your username and password.",

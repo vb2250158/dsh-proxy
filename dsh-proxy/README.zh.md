@@ -103,3 +103,5 @@ pnpm run smoke   # 对正在运行的 DSH（127.0.0.1:3080）做全流程冒烟�
 0.1.7: Settings own only POST /api/dsh-proxy/{status,update,start,stop}; all other API dispatch remains with DSH. Upgrade from 0.1.6 to restore frontend loading.
 
 状态卡显示当前局域网浏览器访问地址及对应二维码。手机连接同一网络，扫码后在浏览器打开，使用已设置的账号密码登录。二维码在本地生成，只包含网址。代理停止后不显示访问链接。
+
+可选 HTTPS 在 profile 插件配置中设置 httpsPort、tlsCertFile、tlsKeyFile 和 tlsCaFile。HTTP 与 HTTPS 共用账号密码并一起停止。设置页显示 HTTPS 二维码、公开 CA 下载及 SHA-256 指纹。安卓须安装此 CA 后才能申请麦克风权限，不要跳过证书警告。scripts/new-lan-certificate.ps1 生成仅当前用户和 SYSTEM 可访问的证书目录，不修改系统信任。服务器证书覆盖传入的 IP 地址，有效期一年；IP 或有效期变化后需要更新证书。

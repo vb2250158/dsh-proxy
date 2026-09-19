@@ -103,3 +103,5 @@ The integrated proxy refuses to listen until both username and password are conf
 0.1.7: Settings own only POST /api/dsh-proxy/{status,update,start,stop}; all other API dispatch remains with DSH. Upgrade from 0.1.6 to restore frontend loading.
 
 The status card lists current LAN browser URLs and a QR code for each address. Scan with a phone on the same network and open in its browser; sign in with the configured username and password. QR codes are generated locally and contain only the URL. Stopped listeners expose no access links.
+
+Optional HTTPS uses httpsPort, tlsCertFile, tlsKeyFile and tlsCaFile in the plugin profile configuration. Both listeners share Basic Auth and stop together. Settings show HTTPS QR codes and a public CA download with SHA-256 fingerprint. Android must install this CA before microphone access; do not bypass certificate warnings. scripts/new-lan-certificate.ps1 creates a user-protected certificate directory without changing system trust. Certificates cover the supplied IP addresses and the server certificate expires after one year; renew it when the address or validity changes.

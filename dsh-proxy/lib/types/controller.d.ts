@@ -9,6 +9,13 @@ export interface EffectiveProxyOptions {
     password: string;
 }
 export interface ProxyControllerOptions {
+    /** Optional HTTPS certificate files; private material never enters status. */
+    tls?: {
+        port: number;
+        certFile: string;
+        keyFile: string;
+        caFile: string;
+    };
     /** Host browser-auth service, kept outside persisted user settings. */
     upstreamAuth?: import('./upstream-auth.ts').UpstreamAuth;
     /** Options from the cordis config (schema defaults applied, upstream port resolved). */
@@ -36,6 +43,7 @@ export declare class ProxyController {
     private readonly opts;
     private handle;
     private boundPort;
+    private caFingerprint;
     private probeCache;
     private readonly settings;
     private readonly log;

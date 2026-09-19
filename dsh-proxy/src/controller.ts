@@ -6,6 +6,8 @@
  * into the harness, which keeps every business rule unit-testable against a
  * real in-process upstream.
  */
+import { readFileSync } from 'node:fs'
+import { X509Certificate } from 'node:crypto'
 import { lanAddresses, startLanProxy, type LanProxyHandle } from './proxy.ts'
 import { RuntimeSettingsFile, normalizeRuntimeSettings, validateUpdate } from './settings.ts'
 import type { LanProxyStatus, LanProxyUpdatePayload, LanProxyUpdateResult } from './contract.ts'
@@ -21,6 +23,9 @@ export interface EffectiveProxyOptions {
 }
 
 export interface ProxyControllerOptions {
+  /** Optional HTTPS certificate files; private material never enters status. */
+  tls?: { port: number; certFile: string; keyFile: string; caFile: string }
+
   /** Host browser-auth service, kept outside persisted user settings. */
   upstreamAuth?: import('./upstream-auth.ts').UpstreamAuth
   /** Options from the cordis config (schema defaults applied, upstream port resolved). */
@@ -48,6 +53,7 @@ const PROBE_CACHE_MS = 3000
 export class ProxyController {
   private handle: LanProxyHandle | null = null
   private boundPort: number | null = null
+  private caFingerprint: string | null = null
   private probeCache: { at: number; reachable: boolean } | null = null
   private readonly settings: RuntimeSettingsFile
   private readonly log: ProxyControllerOptions['log']
@@ -87,19 +93,23 @@ export class ProxyController {
       return { ok: false, message }
     }
     const log = this.log
-    const handle = startLanProxy({
-      upstreamAuth: this.opts.upstreamAuth,
-      listenHost: this.options.listenHost,
-      listenPort: this.options.listenPort,
-      upstreamHost: this.options.upstreamHost,
-      upstreamPort: this.options.upstreamPort,
-      username: this.options.username,
-      password: this.options.password,
-      log,
-    })
-    this.handle = handle
     try {
+      const tls = this.opts.tls ? { port: this.opts.tls.port, cert: readFileSync(this.opts.tls.certFile), key: readFileSync(this.opts.tls.keyFile), ca: readFileSync(this.opts.tls.caFile) } : undefined
+      const fingerprint = tls ? new X509Certificate(tls.ca).fingerprint256 : null
+      const handle = startLanProxy({
+        tls,
+        upstreamAuth: this.opts.upstreamAuth,
+        listenHost: this.options.listenHost,
+        listenPort: this.options.listenPort,
+        upstreamHost: this.options.upstreamHost,
+        upstreamPort: this.options.upstreamPort,
+        username: this.options.username,
+        password: this.options.password,
+        log,
+      })
+      this.handle = handle
       const bound = await handle.ready
+      this.caFingerprint = fingerprint
       this.boundPort = bound
       const urls = handle.describeUrls(bound)
       log('info', `dsh-proxy: listening on ${this.options.listenHost}:${bound} -> http://${this.options.upstreamHost}:${this.options.upstreamPort}`)
@@ -129,6 +139,7 @@ export class ProxyController {
     const handle = this.handle
     this.handle = null
     this.boundPort = null
+    this.caFingerprint = null
     if (handle !== null) await handle.close()
   }
 
@@ -147,7 +158,7 @@ export class ProxyController {
    * @returns the status as it will be once stopped.
    */
   stopDeferred(delayMs = 300): LanProxyStatus {
-    const stopped: LanProxyStatus = { ...this.status(), proxyListening: false, lanUrls: [] }
+    const stopped: LanProxyStatus = { ...this.status(), proxyListening: false, lanUrls: [], caCertificateUrl: null, caFingerprint: null }
     const timer = setTimeout(() => {
       void this.stop()
     }, delayMs)
@@ -161,7 +172,9 @@ export class ProxyController {
    */
   status(): LanProxyStatus {
     return {
-      lanUrls: this.boundPort === null ? [] : lanAddresses(this.boundPort).filter(url =>
+      caCertificateUrl: this.boundPort !== null && this.opts.tls ? `${lanAddresses(this.boundPort)[0] ?? `http://127.0.0.1:${this.boundPort}`}/dsh-proxy-ca.crt` : null,
+      caFingerprint: this.caFingerprint,
+      lanUrls: this.boundPort === null ? [] : lanAddresses(this.opts.tls?.port ?? this.boundPort).map(url => this.opts.tls ? url.replace('http:', 'https:') : url).filter(url =>
         this.options.listenHost === '0.0.0.0' || this.options.listenHost === '::'
         || new URL(url).hostname === this.options.listenHost),
       listenHost: this.options.listenHost,

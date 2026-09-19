@@ -29,6 +29,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = false
 const t = (key: LanProxyKey): string => zh[key] ?? key
 
 const STATUS: LanProxyStatus = {
+  caCertificateUrl: null, caFingerprint: null,
   lanUrls: ['http://192.168.1.10:3081'],
   listenHost: '0.0.0.0',
   listenPort: 3081,

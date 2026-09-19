@@ -2,6 +2,8 @@
 export declare const NS = "dsh-proxy";
 /** Simplified Chinese dictionary (the key-set source of truth). */
 export declare const zh: {
+    'status.ca': string;
+    'status.trust': string;
     'status.lanUrls': string;
     'status.noLanUrls': string;
     'status.scan': string;

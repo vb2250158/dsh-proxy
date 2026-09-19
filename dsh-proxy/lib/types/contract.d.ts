@@ -18,6 +18,9 @@ export declare const RPC_STOP_ENDPOINT = "dsh-proxy/stop";
 export interface LanProxyStatus {
     /** Current non-loopback IPv4 URLs covered by the active listener; empty when stopped. */
     lanUrls: string[];
+    /** Public CA download and SHA-256 fingerprint for client trust setup. */
+    caCertificateUrl: string | null;
+    caFingerprint: string | null;
     /** Interface the proxy binds (0.0.0.0 = LAN reachable). */
     listenHost: string;
     /** Port the proxy listens on (the OS-assigned value when 0 was configured). */

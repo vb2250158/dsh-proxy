@@ -260,6 +260,11 @@ export function SettingsSection({ rpc, t }: SettingsSectionProps) {
     <>
       <div style={{ display: 'grid', gap: '10px', marginBottom: '16px' }}>
         <strong>{t('status.lanUrls')}</strong>
+        {status.caCertificateUrl ? <div style={{ display: 'grid', gap: '8px' }}>
+          <a href={status.caCertificateUrl}>{t('status.ca')}</a>
+          <span>{t('status.trust')}</span>
+          <code style={{ overflowWrap: 'anywhere' }}>{status.caFingerprint}</code>
+        </div> : null}
         {status.lanUrls.length > 0 ? <>
           <AccessLinks urls={status.lanUrls} errorText={t('status.qrError')} />
           <span className="dsh_lanproxy_hint">{t('status.scan')}</span>

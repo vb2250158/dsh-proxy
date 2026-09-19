@@ -1,5 +1,12 @@
 import { type UpstreamAuth } from './upstream-auth.ts';
 export interface LanProxyOptions {
+    /** Optional parallel HTTPS listener. CA contains only the public trust certificate. */
+    tls?: {
+        port: number;
+        cert: Buffer;
+        key: Buffer;
+        ca: Buffer;
+    };
     /** Host-owned authentication, used only after the proxy's Basic Auth gate. */
     upstreamAuth?: UpstreamAuth;
     /** Interface the proxy binds (0.0.0.0 for LAN access). */

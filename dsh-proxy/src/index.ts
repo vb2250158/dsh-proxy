@@ -35,6 +35,12 @@ export const inject = ['webServer', 'connection']
 
 /** Plugin configuration, validated at load by the Loader. */
 export interface Config {
+  /** HTTPS listener disabled when zero; PEM certificate/key and public CA files required otherwise. */
+  httpsPort: number
+  tlsCertFile: string
+  tlsKeyFile: string
+  tlsCaFile: string
+
   /** Interface the proxy binds; 0.0.0.0 exposes the LAN. */
   listenHost: string
   /** Port the proxy listens on (must differ from the web app's port). */
@@ -51,6 +57,10 @@ export interface Config {
 
 /** Configuration schema; deployment-varying bounds stay tunable from cordis.yml. */
 export const Config = z.object({
+  httpsPort: z.natural().max(65535).default(0),
+  tlsCertFile: z.string().default(''),
+  tlsKeyFile: z.string().default(''),
+  tlsCaFile: z.string().default(''),
   listenHost: z.string().default('0.0.0.0'),
   listenPort: z.natural().max(65535).default(3081),
   upstreamHost: z.string().default('127.0.0.1'),
@@ -73,6 +83,7 @@ export function apply(ctx: Context, config?: Config): void {
     ctx.logger[level](message)
   }
   const controller = new ProxyController({
+    tls: resolved.httpsPort ? { port: resolved.httpsPort, certFile: resolved.tlsCertFile, keyFile: resolved.tlsKeyFile, caFile: resolved.tlsCaFile } : undefined,
     upstreamAuth: connection as unknown as import('./upstream-auth.ts').UpstreamAuth,
     base: {
       listenHost: resolved.listenHost,

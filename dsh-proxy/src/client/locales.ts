@@ -10,6 +10,8 @@ export const NS = 'dsh-proxy'
 
 /** Simplified Chinese dictionary (the key-set source of truth). */
 export const zh = {
+  'status.ca': '下载安卓 CA 证书',
+  'status.trust': '首次使用：下载证书，在安卓设置中安装为 CA 证书，再扫描 HTTPS 二维码。安装前核对下方 SHA-256 指纹。',
   'status.lanUrls': '浏览器访问',
   'status.noLanUrls': '暂无可用的局域网地址',
   'status.scan': '手机扫码后在浏览器中打开，使用账号密码登录。',
@@ -70,6 +72,8 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
 
 /** English dictionary, checked complete against the zh key set. */
 export const en: Record<LanProxyKey, string> = {
+  'status.ca': 'Download Android CA certificate',
+  'status.trust': 'First use: install this CA certificate in Android settings, then scan the HTTPS code. Verify the SHA-256 fingerprint below.',
   'status.lanUrls': 'Browser access',
   'status.noLanUrls': 'No LAN address available',
   'status.scan': 'Scan on your phone, open in a browser and sign in with your username and password.',

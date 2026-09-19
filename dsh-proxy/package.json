@@ -1,7 +1,7 @@
 {
   "name": "@smanx/dsh-proxy",
   "description": "LAN reverse proxy for the DeepSeek Harness web app: forwards the local DSH port to a second, authenticated port (HTTP + WebSocket) with a web-based login page and a Basic Auth fallback.",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "license": "MIT",
   "type": "module",
   "main": "lib/index.cjs",
@@ -75,6 +75,7 @@
     "qrcode": "^1.5.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "selfsigned": "^5.5.0",
     "typescript": "^6.0.3",
     "vitest": "^4.1.8",
     "ws": "^8.18.0"

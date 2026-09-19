@@ -480,7 +480,7 @@ var require_follow_redirects = __commonJS({
     var url = require("url");
     var URL2 = url.URL;
     var http2 = require("http");
-    var https = require("https");
+    var https2 = require("https");
     var Writable = require("stream").Writable;
     var assert = require("assert");
     var debug = require_debug();
@@ -980,7 +980,7 @@ var require_follow_redirects = __commonJS({
     function escapeRegex(regex) {
       return regex.replace(/[\]\\/()*+?.$]/g, "\\$&");
     }
-    module2.exports = wrap({ http: http2, https });
+    module2.exports = wrap({ http: http2, https: https2 });
     module2.exports.wrap = wrap;
   }
 });
@@ -1064,9 +1064,9 @@ var require_web_incoming = __commonJS({
         server.emit("start", req, res, options.target || options.forward);
         var agents = options.followRedirects ? followRedirects : nativeAgents;
         var http2 = agents.http;
-        var https = agents.https;
+        var https2 = agents.https;
         if (options.forward) {
-          var forwardReq = (options.forward.protocol === "https:" ? https : http2).request(
+          var forwardReq = (options.forward.protocol === "https:" ? https2 : http2).request(
             common.setupOutgoing(options.ssl || {}, options, req, "forward")
           );
           var forwardError = createErrorHandler(forwardReq, options.forward);
@@ -1077,7 +1077,7 @@ var require_web_incoming = __commonJS({
             return res.end();
           }
         }
-        var proxyReq = (options.target.protocol === "https:" ? https : http2).request(
+        var proxyReq = (options.target.protocol === "https:" ? https2 : http2).request(
           common.setupOutgoing(options.ssl || {}, options, req)
         );
         proxyReq.on("socket", function(socket) {
@@ -1139,7 +1139,7 @@ var require_web_incoming = __commonJS({
 var require_ws_incoming = __commonJS({
   "node_modules/.pnpm/http-proxy@1.18.1/node_modules/http-proxy/lib/http-proxy/passes/ws-incoming.js"(exports2, module2) {
     var http2 = require("http");
-    var https = require("https");
+    var https2 = require("https");
     var common = require_common();
     module2.exports = {
       /**
@@ -1207,7 +1207,7 @@ var require_ws_incoming = __commonJS({
         };
         common.setupSocket(socket);
         if (head && head.length) socket.unshift(head);
-        var proxyReq = (common.isSSL.test(options.target.protocol) ? https : http2).request(
+        var proxyReq = (common.isSSL.test(options.target.protocol) ? https2 : http2).request(
           common.setupOutgoing(options.ssl || {}, options, req)
         );
         if (server) {
@@ -1257,7 +1257,7 @@ var require_http_proxy = __commonJS({
     var parse_url = require("url").parse;
     var EE3 = require_eventemitter3();
     var http2 = require("http");
-    var https = require("https");
+    var https2 = require("https");
     var web = require_web_incoming();
     var ws = require_ws_incoming();
     httpProxy2.Server = ProxyServer;
@@ -1319,7 +1319,7 @@ var require_http_proxy = __commonJS({
       var self = this, closure = function(req, res) {
         self.web(req, res);
       };
-      this._server = this.options.ssl ? https.createServer(this.options.ssl, closure) : http2.createServer(closure);
+      this._server = this.options.ssl ? https2.createServer(this.options.ssl, closure) : http2.createServer(closure);
       if (this.options.ws) {
         this._server.on("upgrade", function(req, socket, head) {
           self.ws(req, socket, head);
@@ -2209,8 +2209,13 @@ function dshHomePath(...segments) {
   return (0, import_node_path.join)(resolveDshHome(), ...segments);
 }
 
+// src/controller.ts
+var import_node_fs2 = require("node:fs");
+var import_node_crypto2 = require("node:crypto");
+
 // src/proxy.ts
 var import_node_http = __toESM(require("node:http"), 1);
+var import_node_https = __toESM(require("node:https"), 1);
 var import_node_os2 = __toESM(require("node:os"), 1);
 var import_http_proxy = __toESM(require_http_proxy3(), 1);
 
@@ -2481,8 +2486,13 @@ function startLanProxy(options) {
     });
     res.end("401 Unauthorized");
   };
-  const server = import_node_http.default.createServer((req, res) => {
+  const requestHandler = (req, res) => {
     const pathname = new URL(req.url ?? "/", "http://proxy.local").pathname;
+    if (options.tls && pathname === "/dsh-proxy-ca.crt") {
+      res.writeHead(200, { "content-type": "application/x-x509-ca-cert", "content-disposition": "attachment; filename=DSH-LAN-CA.crt", "cache-control": "no-store" });
+      res.end(options.tls.ca);
+      return;
+    }
     if (PUBLIC_PATHS.has(pathname)) {
       alignOrigin(req);
       proxy.web(req, res);
@@ -2498,9 +2508,12 @@ function startLanProxy(options) {
       return;
     }
     proxy.web(req, res);
-  });
+  };
+  const server = import_node_http.default.createServer(requestHandler);
+  const tlsServer = options.tls ? import_node_https.default.createServer({ cert: options.tls.cert, key: options.tls.key, minVersion: "TLSv1.2" }, requestHandler) : null;
+  const servers = tlsServer ? [server, tlsServer] : [server];
   const upgradedSockets = /* @__PURE__ */ new Set();
-  server.on("upgrade", (req, socket, head) => {
+  for (const listener of servers) listener.on("upgrade", (req, socket, head) => {
     if (!auth.isAuthenticated(req.headers.authorization)) {
       socket.end(`HTTP/1.1 401 Unauthorized\r
 www-authenticate: Basic realm="${AUTH_REALM}"\r
@@ -2517,34 +2530,45 @@ Connection: close\r
     }
     proxy.ws(req, socket, head);
   });
-  const ready = new Promise((resolve3, reject) => {
-    const onListenError = (err) => {
-      log("error", `cannot listen on ${listenHost}:${listenPort}: ${err.code ?? err.message}`);
-      reject(err);
-    };
-    server.once("error", onListenError);
-    server.listen(listenPort, listenHost, () => {
-      server.off("error", onListenError);
-      server.on("error", (err) => log("error", `proxy server error: ${err.message}`));
-      resolve3(server.address().port);
-    });
-  });
   const close = async () => {
     for (const socket of upgradedSockets) socket.destroy();
     upgradedSockets.clear();
-    await new Promise((resolveClose) => {
-      server.close(() => resolveClose());
-      const timer = setTimeout(() => {
-        server.closeAllConnections();
-      }, 250);
-    });
+    await Promise.all(servers.map((listener) => new Promise((resolve3) => {
+      if (!listener.listening) {
+        resolve3();
+        return;
+      }
+      const timer = setTimeout(() => listener.closeAllConnections(), 250);
+      listener.close(() => {
+        clearTimeout(timer);
+        resolve3();
+      });
+    })));
   };
+  const listen = (listener, port) => new Promise((resolve3, reject) => {
+    listener.once("error", reject);
+    listener.listen(port, listenHost, () => {
+      listener.off("error", reject);
+      listener.on("error", (err) => log("error", `proxy server error: ${err.message}`));
+      resolve3(listener.address().port);
+    });
+  });
+  const ready = (async () => {
+    try {
+      const port = await listen(server, listenPort);
+      if (tlsServer && options.tls) await listen(tlsServer, options.tls.port);
+      return port;
+    } catch (error) {
+      await close();
+      throw error;
+    }
+  })();
   return {
     ready,
     close,
     describeUrls: (boundPort) => ({
       local: `http://127.0.0.1:${boundPort}`,
-      lan: lanAddresses(boundPort)
+      lan: options.tls ? lanAddresses(options.tls.port).map((url) => url.replace("http:", "https:")) : lanAddresses(boundPort)
     })
   };
 }
@@ -2660,6 +2684,7 @@ var ProxyController = class {
   opts;
   handle = null;
   boundPort = null;
+  caFingerprint = null;
   probeCache = null;
   settings;
   log;
@@ -2683,19 +2708,23 @@ var ProxyController = class {
       return { ok: false, message };
     }
     const log = this.log;
-    const handle = startLanProxy({
-      upstreamAuth: this.opts.upstreamAuth,
-      listenHost: this.options.listenHost,
-      listenPort: this.options.listenPort,
-      upstreamHost: this.options.upstreamHost,
-      upstreamPort: this.options.upstreamPort,
-      username: this.options.username,
-      password: this.options.password,
-      log
-    });
-    this.handle = handle;
     try {
+      const tls = this.opts.tls ? { port: this.opts.tls.port, cert: (0, import_node_fs2.readFileSync)(this.opts.tls.certFile), key: (0, import_node_fs2.readFileSync)(this.opts.tls.keyFile), ca: (0, import_node_fs2.readFileSync)(this.opts.tls.caFile) } : void 0;
+      const fingerprint = tls ? new import_node_crypto2.X509Certificate(tls.ca).fingerprint256 : null;
+      const handle = startLanProxy({
+        tls,
+        upstreamAuth: this.opts.upstreamAuth,
+        listenHost: this.options.listenHost,
+        listenPort: this.options.listenPort,
+        upstreamHost: this.options.upstreamHost,
+        upstreamPort: this.options.upstreamPort,
+        username: this.options.username,
+        password: this.options.password,
+        log
+      });
+      this.handle = handle;
       const bound = await handle.ready;
+      this.caFingerprint = fingerprint;
       this.boundPort = bound;
       const urls = handle.describeUrls(bound);
       log("info", `dsh-proxy: listening on ${this.options.listenHost}:${bound} -> http://${this.options.upstreamHost}:${this.options.upstreamPort}`);
@@ -2724,6 +2753,7 @@ var ProxyController = class {
     const handle = this.handle;
     this.handle = null;
     this.boundPort = null;
+    this.caFingerprint = null;
     if (handle !== null) await handle.close();
   }
   /** Stop and start again with the current effective options (the "restart the forwarding service" verb). */
@@ -2740,7 +2770,7 @@ var ProxyController = class {
    * @returns the status as it will be once stopped.
    */
   stopDeferred(delayMs = 300) {
-    const stopped = { ...this.status(), proxyListening: false, lanUrls: [] };
+    const stopped = { ...this.status(), proxyListening: false, lanUrls: [], caCertificateUrl: null, caFingerprint: null };
     const timer = setTimeout(() => {
       void this.stop();
     }, delayMs);
@@ -2753,7 +2783,9 @@ var ProxyController = class {
    */
   status() {
     return {
-      lanUrls: this.boundPort === null ? [] : lanAddresses(this.boundPort).filter((url) => this.options.listenHost === "0.0.0.0" || this.options.listenHost === "::" || new URL(url).hostname === this.options.listenHost),
+      caCertificateUrl: this.boundPort !== null && this.opts.tls ? `${lanAddresses(this.boundPort)[0] ?? `http://127.0.0.1:${this.boundPort}`}/dsh-proxy-ca.crt` : null,
+      caFingerprint: this.caFingerprint,
+      lanUrls: this.boundPort === null ? [] : lanAddresses(this.opts.tls?.port ?? this.boundPort).map((url) => this.opts.tls ? url.replace("http:", "https:") : url).filter((url) => this.options.listenHost === "0.0.0.0" || this.options.listenHost === "::" || new URL(url).hostname === this.options.listenHost),
       listenHost: this.options.listenHost,
       listenPort: this.boundPort ?? this.options.listenPort,
       proxyListening: this.boundPort !== null,
@@ -2898,6 +2930,10 @@ var RPC_STOP_ENDPOINT = "dsh-proxy/stop";
 var name = "@smanx/dsh-proxy";
 var inject = ["webServer", "connection"];
 var Config = Schema.object({
+  httpsPort: Schema.natural().max(65535).default(0),
+  tlsCertFile: Schema.string().default(""),
+  tlsKeyFile: Schema.string().default(""),
+  tlsCaFile: Schema.string().default(""),
   listenHost: Schema.string().default("0.0.0.0"),
   listenPort: Schema.natural().max(65535).default(3081),
   upstreamHost: Schema.string().default("127.0.0.1"),
@@ -2912,6 +2948,7 @@ function apply(ctx, config) {
     ctx.logger[level](message);
   };
   const controller = new ProxyController({
+    tls: resolved.httpsPort ? { port: resolved.httpsPort, certFile: resolved.tlsCertFile, keyFile: resolved.tlsKeyFile, caFile: resolved.tlsCaFile } : void 0,
     upstreamAuth: connection,
     base: {
       listenHost: resolved.listenHost,

@@ -30,6 +30,7 @@
  * fully open. Basic Auth remains the one security barrier for the surface.
  */
 import http from 'node:http'
+import https from 'node:https'
 import type { Duplex } from 'node:stream'
 import net from 'node:net'
 import os from 'node:os'
@@ -41,6 +42,9 @@ import { attachBodyTransform } from './compression.ts'
 import { upstreamCookie, type UpstreamAuth } from './upstream-auth.ts'
 
 export interface LanProxyOptions {
+  /** Optional parallel HTTPS listener. CA contains only the public trust certificate. */
+  tls?: { port: number; cert: Buffer; key: Buffer; ca: Buffer }
+
   /** Host-owned authentication, used only after the proxy's Basic Auth gate. */
   upstreamAuth?: UpstreamAuth
   /** Interface the proxy binds (0.0.0.0 for LAN access). */
@@ -191,8 +195,13 @@ export function startLanProxy(options: LanProxyOptions): LanProxyHandle {
     res.end('401 Unauthorized')
   }
 
-  const server = http.createServer((req, res) => {
+  const requestHandler: http.RequestListener = (req, res) => {
     const pathname = new URL(req.url ?? '/', 'http://proxy.local').pathname
+    if (options.tls && pathname === '/dsh-proxy-ca.crt') {
+      res.writeHead(200, { 'content-type': 'application/x-x509-ca-cert', 'content-disposition': 'attachment; filename=DSH-LAN-CA.crt', 'cache-control': 'no-store' })
+      res.end(options.tls.ca)
+      return
+    }
     // Public static files (PWA manifest, favicon): fetched without
     // credentials by the browser, so they bypass the auth gate.
     if (PUBLIC_PATHS.has(pathname)) {
@@ -210,10 +219,13 @@ export function startLanProxy(options: LanProxyOptions): LanProxyHandle {
       return
     }
     proxy.web(req, res)
-  })
+  }
+  const server = http.createServer(requestHandler)
+  const tlsServer = options.tls ? https.createServer({ cert: options.tls.cert, key: options.tls.key, minVersion: 'TLSv1.2' }, requestHandler) : null
+  const servers = tlsServer ? [server, tlsServer] : [server]
 
   const upgradedSockets = new Set<net.Socket>()
-  server.on('upgrade', (req, socket, head) => {
+  for (const listener of servers) listener.on('upgrade', (req, socket, head) => {
     if (!auth.isAuthenticated(req.headers.authorization)) {
       socket.end(`HTTP/1.1 401 Unauthorized\r\nwww-authenticate: Basic realm="${AUTH_REALM}"\r\nConnection: close\r\n\r\n`)
       return
@@ -227,41 +239,38 @@ export function startLanProxy(options: LanProxyOptions): LanProxyHandle {
     proxy.ws(req, socket as Duplex, head)
   })
 
-  const ready = new Promise<number>((resolve, reject) => {
-    const onListenError = (err: NodeJS.ErrnoException): void => {
-      log('error', `cannot listen on ${listenHost}:${listenPort}: ${err.code ?? err.message}`)
-      reject(err)
-    }
-    server.once('error', onListenError)
-    server.listen(listenPort, listenHost, () => {
-      server.off('error', onListenError)
-      server.on('error', (err) => log('error', `proxy server error: ${err.message}`))
-      resolve((server.address() as net.AddressInfo).port)
-    })
-  })
-
   const close = async (): Promise<void> => {
     for (const socket of upgradedSockets) socket.destroy()
     upgradedSockets.clear()
-    await new Promise<void>((resolveClose) => {
-      // Stop accepting new connections; the listener is released immediately
-      // so a restart can rebind the same port. In-flight responses (e.g. the
-      // settings-page update answer travelling back through the proxy) get a
-      // short grace before connections are force-closed. The timer stays
-      // referenced so it always fires even under a loaded event loop.
-      server.close(() => resolveClose())
-      const timer = setTimeout(() => {
-        server.closeAllConnections()
-      }, 250)
-    })
+    await Promise.all(servers.map(listener => new Promise<void>(resolve => {
+      if (!listener.listening) { resolve(); return }
+      const timer = setTimeout(() => listener.closeAllConnections(), 250)
+      listener.close(() => { clearTimeout(timer); resolve() })
+    })))
   }
+  const listen = (listener: http.Server, port: number): Promise<number> => new Promise((resolve, reject) => {
+    listener.once('error', reject)
+    listener.listen(port, listenHost, () => {
+      listener.off('error', reject)
+      listener.on('error', err => log('error', `proxy server error: ${err.message}`))
+      resolve((listener.address() as net.AddressInfo).port)
+    })
+  })
+  // Bind in sequence so a TLS failure closes the already-open HTTP listener.
+  const ready = (async () => {
+    try {
+      const port = await listen(server, listenPort)
+      if (tlsServer && options.tls) await listen(tlsServer, options.tls.port)
+      return port
+    } catch (error) { await close(); throw error }
+  })()
 
   return {
     ready,
     close,
     describeUrls: (boundPort) => ({
       local: `http://127.0.0.1:${boundPort}`,
-      lan: lanAddresses(boundPort),
+      lan: options.tls ? lanAddresses(options.tls.port).map(url => url.replace('http:', 'https:')) : lanAddresses(boundPort),
     }),
   }
 }

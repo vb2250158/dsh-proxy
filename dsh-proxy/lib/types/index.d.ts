@@ -21,6 +21,11 @@ export declare const name = "@smanx/dsh-proxy";
 export declare const inject: string[];
 /** Plugin configuration, validated at load by the Loader. */
 export interface Config {
+    /** HTTPS listener disabled when zero; PEM certificate/key and public CA files required otherwise. */
+    httpsPort: number;
+    tlsCertFile: string;
+    tlsKeyFile: string;
+    tlsCaFile: string;
     /** Interface the proxy binds; 0.0.0.0 exposes the LAN. */
     listenHost: string;
     /** Port the proxy listens on (must differ from the web app's port). */
@@ -36,6 +41,10 @@ export interface Config {
 }
 /** Configuration schema; deployment-varying bounds stay tunable from cordis.yml. */
 export declare const Config: z<Schemastery.ObjectS<{
+    httpsPort: z<number, number>;
+    tlsCertFile: z<string, string>;
+    tlsKeyFile: z<string, string>;
+    tlsCaFile: z<string, string>;
     listenHost: z<string, string>;
     listenPort: z<number, number>;
     upstreamHost: z<string, string>;
@@ -43,6 +52,10 @@ export declare const Config: z<Schemastery.ObjectS<{
     username: z<string, string>;
     password: z<string, string>;
 }>, Schemastery.ObjectT<{
+    httpsPort: z<number, number>;
+    tlsCertFile: z<string, string>;
+    tlsKeyFile: z<string, string>;
+    tlsCaFile: z<string, string>;
     listenHost: z<string, string>;
     listenPort: z<number, number>;
     upstreamHost: z<string, string>;
