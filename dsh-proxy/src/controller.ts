@@ -21,6 +21,8 @@ export interface EffectiveProxyOptions {
 }
 
 export interface ProxyControllerOptions {
+  /** Host browser-auth service, kept outside persisted user settings. */
+  upstreamAuth?: import('./upstream-auth.ts').UpstreamAuth
   /** Options from the cordis config (schema defaults applied, upstream port resolved). */
   base: EffectiveProxyOptions
   /** Path of the persisted runtime-settings JSON. */
@@ -79,8 +81,14 @@ export class ProxyController {
    */
   async start(): Promise<StartOutcome> {
     if (this.handle !== null) return { ok: true }
+    if (this.opts.upstreamAuth && (!this.options.username || !this.options.password)) {
+      const message = 'Set both username and password before starting the DSH proxy'
+      this.log('warn', message)
+      return { ok: false, message }
+    }
     const log = this.log
     const handle = startLanProxy({
+      upstreamAuth: this.opts.upstreamAuth,
       listenHost: this.options.listenHost,
       listenPort: this.options.listenPort,
       upstreamHost: this.options.upstreamHost,

@@ -38,8 +38,11 @@ import { Authenticator } from './session.ts'
 import { injectPolyfill, RANDOM_UUID_POLYFILL } from './polyfill.ts'
 import { isJavaScriptContentType, patchClientScript } from './clientpatch.ts'
 import { attachBodyTransform } from './compression.ts'
+import { upstreamCookie, type UpstreamAuth } from './upstream-auth.ts'
 
 export interface LanProxyOptions {
+  /** Host-owned authentication, used only after the proxy's Basic Auth gate. */
+  upstreamAuth?: UpstreamAuth
   /** Interface the proxy binds (0.0.0.0 for LAN access). */
   listenHost: string
   /** Port the proxy listens on; 0 asks the OS for a free port. */
@@ -127,6 +130,8 @@ export function startLanProxy(options: LanProxyOptions): LanProxyHandle {
   // because the rewrite changes the body length; the chunked stream then
   // carries the body.
   proxy.on('proxyRes', (proxyRes, _req, res) => {
+    // Upstream session credentials belong to the server-side proxy only.
+    if (options.upstreamAuth) delete proxyRes.headers['set-cookie']
     const contentType = String(proxyRes.headers['content-type'] ?? '')
     const isHtml = contentType.includes('text/html')
     const isJs = isJavaScriptContentType(contentType)
@@ -154,6 +159,20 @@ export function startLanProxy(options: LanProxyOptions): LanProxyHandle {
 
   const alignOrigin = (req: http.IncomingMessage): void => {
     if (req.headers.origin) req.headers.origin = targetOrigin
+    delete req.headers.authorization
+    delete req.headers.cookie
+  }
+
+  const authenticateUpstream = (req: http.IncomingMessage): boolean => {
+    alignOrigin(req)
+    if (!options.upstreamAuth) return true
+    try {
+      req.headers.cookie = upstreamCookie(options.upstreamAuth, targetOrigin)
+      return true
+    } catch {
+      log('error', 'DSH browser authentication exchange failed')
+      return false
+    }
   }
 
   /**
@@ -185,7 +204,11 @@ export function startLanProxy(options: LanProxyOptions): LanProxyHandle {
       challenge(res)
       return
     }
-    alignOrigin(req)
+    if (!authenticateUpstream(req)) {
+      res.writeHead(502)
+      res.end('DSH authentication unavailable')
+      return
+    }
     proxy.web(req, res)
   })
 
@@ -197,7 +220,10 @@ export function startLanProxy(options: LanProxyOptions): LanProxyHandle {
     }
     upgradedSockets.add(socket as net.Socket)
     ;(socket as net.Socket).once('close', () => upgradedSockets.delete(socket as net.Socket))
-    alignOrigin(req)
+    if (!authenticateUpstream(req)) {
+      socket.end('HTTP/1.1 502 Bad Gateway\r\nConnection: close\r\n\r\n')
+      return
+    }
     proxy.ws(req, socket as Duplex, head)
   })
 

@@ -9,6 +9,8 @@ export interface EffectiveProxyOptions {
     password: string;
 }
 export interface ProxyControllerOptions {
+    /** Host browser-auth service, kept outside persisted user settings. */
+    upstreamAuth?: import('./upstream-auth.ts').UpstreamAuth;
     /** Options from the cordis config (schema defaults applied, upstream port resolved). */
     base: EffectiveProxyOptions;
     /** Path of the persisted runtime-settings JSON. */

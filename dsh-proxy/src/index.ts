@@ -71,6 +71,7 @@ export function apply(ctx: Context, config?: Config): void {
     ctx.logger[level](message)
   }
   const controller = new ProxyController({
+    upstreamAuth: ctx.connection as unknown as import('./upstream-auth.ts').UpstreamAuth,
     base: {
       listenHost: resolved.listenHost,
       listenPort: resolved.listenPort,

@@ -1,4 +1,7 @@
+import { type UpstreamAuth } from './upstream-auth.ts';
 export interface LanProxyOptions {
+    /** Host-owned authentication, used only after the proxy's Basic Auth gate. */
+    upstreamAuth?: UpstreamAuth;
     /** Interface the proxy binds (0.0.0.0 for LAN access). */
     listenHost: string;
     /** Port the proxy listens on; 0 asks the OS for a free port. */

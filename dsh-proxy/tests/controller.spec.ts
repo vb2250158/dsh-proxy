@@ -63,6 +63,15 @@ afterEach(async () => {
 })
 
 describe('ProxyController status', () => {
+  it('does not expose the Host when integrated login credentials are missing', async () => {
+    controller = new ProxyController({
+      base: { ...baseOptions(1), password: '' },
+      settingsFile: tempSettingsFile(), log: () => {},
+      upstreamAuth: { authenticatedUrl: origin => origin, authorizeIndex: () => false },
+    })
+    expect((await controller.start()).ok).toBe(false)
+    expect(controller.status().proxyListening).toBe(false)
+  })
   it('starts and reports the bound port and effective options', async () => {
     const upstreamPort = await startUpstream('A')
     controller = new ProxyController({
