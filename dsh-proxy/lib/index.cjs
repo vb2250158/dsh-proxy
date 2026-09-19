@@ -2871,11 +2871,12 @@ var Config = Schema.object({
 });
 function apply(ctx, config) {
   const resolved = Config(config ?? {});
+  const connection = ctx.get("connection");
   const log = (level, message) => {
     ctx.logger[level](message);
   };
   const controller = new ProxyController({
-    upstreamAuth: ctx.connection,
+    upstreamAuth: connection,
     base: {
       listenHost: resolved.listenHost,
       listenPort: resolved.listenPort,
@@ -2896,7 +2897,7 @@ function apply(ctx, config) {
   );
   ctx.effect(
     () => {
-      const dispose = ctx.connection.rpc.handle(
+      const dispose = connection.rpc.handle(
         RPC_CHANNEL,
         async (endpoint, payload) => {
           if (endpoint === RPC_STATUS_ENDPOINT) {

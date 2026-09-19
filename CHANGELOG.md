@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.5
+
+- Resolve the Connection service through the caller context before registering RPC routes, preserving the webServer injection on current Cordis.
+- Validation: typecheck, 81 tests and rebuilt artifacts.
+
 ## 0.1.4
 
 - Bridge successful Basic Auth logins to the current DSH Host Connection browser authentication for HTTP and WebSocket forwarding.

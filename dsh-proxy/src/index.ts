@@ -67,11 +67,12 @@ export const Config = z.object({
  */
 export function apply(ctx: Context, config?: Config): void {
   const resolved = Config(config ?? {})
+  const connection = ctx.get('connection')!
   const log = (level: 'info' | 'warn' | 'error', message: string): void => {
     ctx.logger[level](message)
   }
   const controller = new ProxyController({
-    upstreamAuth: ctx.connection as unknown as import('./upstream-auth.ts').UpstreamAuth,
+    upstreamAuth: connection as unknown as import('./upstream-auth.ts').UpstreamAuth,
     base: {
       listenHost: resolved.listenHost,
       listenPort: resolved.listenPort,
@@ -94,7 +95,7 @@ export function apply(ctx: Context, config?: Config): void {
 
   ctx.effect(
     () => {
-      const dispose = ctx.connection.rpc.handle(
+      const dispose = connection.rpc.handle(
         RPC_CHANNEL,
         async (endpoint, payload) => {
           if (endpoint === RPC_STATUS_ENDPOINT) {
