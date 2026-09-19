@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.8
+
+- Show live LAN browser URLs and locally generated QR codes in proxy settings. Codes contain only the URL; browser login still uses the configured username and password.
+- Exclude loopback, link-local and duplicate addresses; hide links when the proxy stops.
+
 ## 0.1.7
 
 - Replace the shared /api interceptor with four exact POST routes. Version 0.1.6 prevented Typert methods such as webviewArchive/setup and session/list from dispatching, leaving the frontend on its plugin-loading error screen.

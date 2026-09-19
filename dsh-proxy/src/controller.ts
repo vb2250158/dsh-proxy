@@ -147,7 +147,7 @@ export class ProxyController {
    * @returns the status as it will be once stopped.
    */
   stopDeferred(delayMs = 300): LanProxyStatus {
-    const stopped: LanProxyStatus = { ...this.status(), proxyListening: false }
+    const stopped: LanProxyStatus = { ...this.status(), proxyListening: false, lanUrls: [] }
     const timer = setTimeout(() => {
       void this.stop()
     }, delayMs)
@@ -161,6 +161,9 @@ export class ProxyController {
    */
   status(): LanProxyStatus {
     return {
+      lanUrls: this.boundPort === null ? [] : lanAddresses(this.boundPort).filter(url =>
+        this.options.listenHost === '0.0.0.0' || this.options.listenHost === '::'
+        || new URL(url).hostname === this.options.listenHost),
       listenHost: this.options.listenHost,
       listenPort: this.boundPort ?? this.options.listenPort,
       proxyListening: this.boundPort !== null,

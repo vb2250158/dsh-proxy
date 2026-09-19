@@ -101,3 +101,5 @@ pnpm run smoke   # 对正在运行的 DSH（127.0.0.1:3080）做全流程冒烟�
 浏览器仍通过原生账号密码对话框登录。插件在 Basic Auth 验证成功后调用 Host Connection 的公开网页认证 API，生成的上游 Cookie 仅保留在服务端，不返回给浏览器。HTTP 和 WebSocket 使用相同认证流程。当前 Host 需提供 authenticatedUrl 和 authorizeIndex。沿用已有端口和登录配置；用户名或密码为空时不会启动监听，请在本机设置页补全。
 
 0.1.7: Settings own only POST /api/dsh-proxy/{status,update,start,stop}; all other API dispatch remains with DSH. Upgrade from 0.1.6 to restore frontend loading.
+
+状态卡显示当前局域网浏览器访问地址及对应二维码。手机连接同一网络，扫码后在浏览器打开，使用已设置的账号密码登录。二维码在本地生成，只包含网址。代理停止后不显示访问链接。

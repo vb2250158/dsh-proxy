@@ -25,6 +25,7 @@ import {
   type LanProxyUpdateResult,
 } from '../contract.ts'
 import type { LanProxyKey } from './locales.ts'
+import { AccessLinks } from './AccessLinks.tsx'
 
 /** Injected business face: the generic Connection RPC caller. */
 export interface SettingsSectionInjected {
@@ -257,6 +258,13 @@ export function SettingsSection({ rpc, t }: SettingsSectionProps) {
     </div>
   ) : status !== null ? (
     <>
+      <div style={{ display: 'grid', gap: '10px', marginBottom: '16px' }}>
+        <strong>{t('status.lanUrls')}</strong>
+        {status.lanUrls.length > 0 ? <>
+          <AccessLinks urls={status.lanUrls} errorText={t('status.qrError')} />
+          <span className="dsh_lanproxy_hint">{t('status.scan')}</span>
+        </> : <span className="dsh_lanproxy_hint">{t('status.noLanUrls')}</span>}
+      </div>
       <StatusRow
         label={t('status.proxyPort')}
         value={<PortStatus port={`${status.listenHost}:${status.listenPort}`} ok={status.proxyListening} okText={t('status.proxyRunning')} failText={t('status.proxyStopped')} />}

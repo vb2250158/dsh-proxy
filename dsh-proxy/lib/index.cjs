@@ -2405,10 +2405,10 @@ function lanAddresses(port) {
   const ips = [];
   for (const ifaces of Object.values(import_node_os2.default.networkInterfaces())) {
     for (const entry of ifaces ?? []) {
-      if (entry.family === "IPv4" && !entry.internal) ips.push(entry.address);
+      if (entry.family === "IPv4" && !entry.internal && !entry.address.startsWith("169.254.")) ips.push(entry.address);
     }
   }
-  return ips.map((ip) => `http://${ip}:${port}`);
+  return [...new Set(ips)].map((ip) => `http://${ip}:${port}`);
 }
 function startLanProxy(options) {
   const {
@@ -2740,7 +2740,7 @@ var ProxyController = class {
    * @returns the status as it will be once stopped.
    */
   stopDeferred(delayMs = 300) {
-    const stopped = { ...this.status(), proxyListening: false };
+    const stopped = { ...this.status(), proxyListening: false, lanUrls: [] };
     const timer = setTimeout(() => {
       void this.stop();
     }, delayMs);
@@ -2753,6 +2753,7 @@ var ProxyController = class {
    */
   status() {
     return {
+      lanUrls: this.boundPort === null ? [] : lanAddresses(this.boundPort).filter((url) => this.options.listenHost === "0.0.0.0" || this.options.listenHost === "::" || new URL(url).hostname === this.options.listenHost),
       listenHost: this.options.listenHost,
       listenPort: this.boundPort ?? this.options.listenPort,
       proxyListening: this.boundPort !== null,

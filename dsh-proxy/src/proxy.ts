@@ -84,10 +84,10 @@ export function lanAddresses(port: number): string[] {
   const ips: string[] = []
   for (const ifaces of Object.values(os.networkInterfaces())) {
     for (const entry of ifaces ?? []) {
-      if (entry.family === 'IPv4' && !entry.internal) ips.push(entry.address)
+      if (entry.family === 'IPv4' && !entry.internal && !entry.address.startsWith('169.254.')) ips.push(entry.address)
     }
   }
-  return ips.map((ip) => `http://${ip}:${port}`)
+  return [...new Set(ips)].map((ip) => `http://${ip}:${port}`)
 }
 
 export function startLanProxy(options: LanProxyOptions): LanProxyHandle {

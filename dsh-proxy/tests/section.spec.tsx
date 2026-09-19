@@ -5,6 +5,7 @@
  * service), invalid ports are rejected locally, and transport failures surface
  * as the unreachable banner.
  */
+import QRCode from 'qrcode'
 import type { ReactElement } from 'react'
 import { flushSync } from 'react-dom'
 import { createRoot, type Root } from 'react-dom/client'
@@ -21,11 +22,14 @@ import {
 } from '../src/contract.ts'
 import type { ClientConnectionRpc } from '@deepseek-ai/dsh-client-connection/client'
 
+vi.mock('qrcode', () => ({ default: { toDataURL: vi.fn().mockResolvedValue('data:image/png;base64,cXI=') } }))
+
 globalThis.IS_REACT_ACT_ENVIRONMENT = false
 
 const t = (key: LanProxyKey): string => zh[key] ?? key
 
 const STATUS: LanProxyStatus = {
+  lanUrls: ['http://192.168.1.10:3081'],
   listenHost: '0.0.0.0',
   listenPort: 3081,
   proxyListening: true,
@@ -95,6 +99,23 @@ afterEach(() => {
 })
 
 describe('status card', () => {
+  it('renders browser URLs and QR codes containing only the URL', async () => {
+    const { rpc } = makeRpc()
+    mounted = mount(<SettingsSection {...props(rpc)} />)
+    await flush()
+    await flush()
+    expect(mounted.container.querySelector('a')?.getAttribute('href')).toBe(STATUS.lanUrls[0])
+    expect(QRCode.toDataURL).toHaveBeenCalledWith(STATUS.lanUrls[0], expect.objectContaining({ margin: 4 }))
+    expect(mounted.container.querySelector('img')?.alt).toBe(STATUS.lanUrls[0])
+  })
+  it('shows no scannable URL when the listener is stopped', async () => {
+    const { rpc } = makeRpc({ status: async () => ({ ok: true, value: { ...STATUS, proxyListening: false, lanUrls: [] } }) })
+    mounted = mount(<SettingsSection {...props(rpc)} />)
+    await flush()
+    expect(mounted.container.querySelector('a')).toBeNull()
+    expect(mounted.container.querySelector('img')).toBeNull()
+  })
+
   it('renders both ports with green lights, plus the auth state', async () => {
     const { rpc } = makeRpc()
     mounted = mount(<SettingsSection {...props(rpc)} />)

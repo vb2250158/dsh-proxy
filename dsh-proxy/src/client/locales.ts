@@ -10,6 +10,10 @@ export const NS = 'dsh-proxy'
 
 /** Simplified Chinese dictionary (the key-set source of truth). */
 export const zh = {
+  'status.lanUrls': '浏览器访问',
+  'status.noLanUrls': '暂无可用的局域网地址',
+  'status.scan': '手机扫码后在浏览器中打开，使用账号密码登录。',
+  'status.qrError': '二维码生成失败，请使用上方链接。',
   'nav': '局域网代理',
   'status.title': '运行状态',
   'status.proxyPort': '代理服务端口',
@@ -66,6 +70,10 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
 
 /** English dictionary, checked complete against the zh key set. */
 export const en: Record<LanProxyKey, string> = {
+  'status.lanUrls': 'Browser access',
+  'status.noLanUrls': 'No LAN address available',
+  'status.scan': 'Scan on your phone, open in a browser and sign in with your username and password.',
+  'status.qrError': 'QR code unavailable. Use the link above.',
   'nav': 'LAN Proxy',
   'status.title': 'Status',
   'status.proxyPort': 'Proxy port',
