@@ -30,11 +30,11 @@ module.exports = __toCommonJS(index_exports);
 var import_react = require("react");
 
 // src/contract.ts
-var RPC_CHANNEL = "/dsh-proxy";
-var RPC_STATUS_ENDPOINT = "status";
-var RPC_UPDATE_ENDPOINT = "update";
-var RPC_START_ENDPOINT = "start";
-var RPC_STOP_ENDPOINT = "stop";
+var RPC_CHANNEL = "/api";
+var RPC_STATUS_ENDPOINT = "dsh-proxy/status";
+var RPC_UPDATE_ENDPOINT = "dsh-proxy/update";
+var RPC_START_ENDPOINT = "dsh-proxy/start";
+var RPC_STOP_ENDPOINT = "dsh-proxy/stop";
 
 // src/client/SettingsSection.tsx
 var import_jsx_runtime = require("react/jsx-runtime");

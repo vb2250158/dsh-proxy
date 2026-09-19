@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.6
+
+- Register settings endpoints under /api/dsh-proxy through the shared Connection interceptor. Dedicated-channel registration in 0.1.4 and 0.1.5 fails against current Cordis; use 0.1.6 or later.
+- Host and client endpoint constants move together; unrelated API methods remain delegated.
+- Validation: typecheck, 81 tests and rebuilt host/client artifacts.
+
 ## 0.1.5
 
 - Resolve the Connection service through the caller context before registering RPC routes, preserving the webServer injection on current Cordis.

@@ -95,8 +95,9 @@ export function apply(ctx: Context, config?: Config): void {
 
   ctx.effect(
     () => {
-      const dispose = connection.rpc.handle(
+      const dispose = connection.rpc.intercept(
         RPC_CHANNEL,
+        (endpoint) => [RPC_STATUS_ENDPOINT, RPC_START_ENDPOINT, RPC_STOP_ENDPOINT, RPC_UPDATE_ENDPOINT].includes(endpoint),
         async (endpoint, payload) => {
           if (endpoint === RPC_STATUS_ENDPOINT) {
             return { ok: true, value: await controller.refreshStatus() }

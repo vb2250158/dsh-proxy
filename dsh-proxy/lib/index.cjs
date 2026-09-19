@@ -2852,11 +2852,11 @@ var ProxyController = class {
 };
 
 // src/contract.ts
-var RPC_CHANNEL = "/dsh-proxy";
-var RPC_STATUS_ENDPOINT = "status";
-var RPC_UPDATE_ENDPOINT = "update";
-var RPC_START_ENDPOINT = "start";
-var RPC_STOP_ENDPOINT = "stop";
+var RPC_CHANNEL = "/api";
+var RPC_STATUS_ENDPOINT = "dsh-proxy/status";
+var RPC_UPDATE_ENDPOINT = "dsh-proxy/update";
+var RPC_START_ENDPOINT = "dsh-proxy/start";
+var RPC_STOP_ENDPOINT = "dsh-proxy/stop";
 
 // src/index.ts
 var name = "@smanx/dsh-proxy";
@@ -2897,8 +2897,9 @@ function apply(ctx, config) {
   );
   ctx.effect(
     () => {
-      const dispose = connection.rpc.handle(
+      const dispose = connection.rpc.intercept(
         RPC_CHANNEL,
+        (endpoint) => [RPC_STATUS_ENDPOINT, RPC_START_ENDPOINT, RPC_STOP_ENDPOINT, RPC_UPDATE_ENDPOINT].includes(endpoint),
         async (endpoint, payload) => {
           if (endpoint === RPC_STATUS_ENDPOINT) {
             return { ok: true, value: await controller.refreshStatus() };
