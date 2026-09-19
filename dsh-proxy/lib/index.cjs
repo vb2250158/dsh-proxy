@@ -2851,8 +2851,43 @@ var ProxyController = class {
   }
 };
 
+// src/rpc-routes.ts
+function registerProxyRoutes(registry, endpoints, handler) {
+  const disposers = endpoints.map((endpoint) => registry.register({
+    path: `/api/${endpoint}`,
+    methods: ["POST"],
+    requestBody: "buffered",
+    async fetch(request) {
+      if (request.headers.get("content-type")?.split(";")[0].trim().toLowerCase() !== "application/json") {
+        return new Response("content type must be application/json", { status: 415 });
+      }
+      let message;
+      try {
+        message = await request.json();
+      } catch {
+        return new Response("invalid JSON", { status: 400 });
+      }
+      if (!message || typeof message !== "object" || !("type" in message) || message.type !== "client-request" || !("rpcId" in message) || typeof message.rpcId !== "string" || !("method" in message) || message.method !== endpoint || !("payload" in message)) {
+        return new Response("invalid RPC request", { status: 400 });
+      }
+      try {
+        const result = await handler(endpoint, message.payload);
+        return Response.json({ type: "server-response", rpcId: message.rpcId, result });
+      } catch {
+        return Response.json({
+          type: "server-response",
+          rpcId: message.rpcId,
+          result: { ok: false, error: { code: "gateway/internal", message: "Proxy operation failed", details: { issues: [] } } }
+        });
+      }
+    }
+  }));
+  return async () => {
+    await Promise.all(disposers.map((dispose) => dispose()));
+  };
+}
+
 // src/contract.ts
-var RPC_CHANNEL = "/api";
 var RPC_STATUS_ENDPOINT = "dsh-proxy/status";
 var RPC_UPDATE_ENDPOINT = "dsh-proxy/update";
 var RPC_START_ENDPOINT = "dsh-proxy/start";
@@ -2897,9 +2932,9 @@ function apply(ctx, config) {
   );
   ctx.effect(
     () => {
-      const dispose = connection.rpc.intercept(
-        RPC_CHANNEL,
-        (endpoint) => [RPC_STATUS_ENDPOINT, RPC_START_ENDPOINT, RPC_STOP_ENDPOINT, RPC_UPDATE_ENDPOINT].includes(endpoint),
+      const dispose = registerProxyRoutes(
+        connection.fetch,
+        [RPC_STATUS_ENDPOINT, RPC_START_ENDPOINT, RPC_STOP_ENDPOINT, RPC_UPDATE_ENDPOINT],
         async (endpoint, payload) => {
           if (endpoint === RPC_STATUS_ENDPOINT) {
             return { ok: true, value: await controller.refreshStatus() };
@@ -2933,11 +2968,7 @@ function apply(ctx, config) {
               details: { issues: [] }
             }
           };
-        },
-        // The channel is loopback-only: through the proxy (Host rewritten to
-        // loopback) and direct loopback both pass; nothing else may mutate
-        // the proxy's credentials.
-        { authority: "loopback" }
+        }
       );
       return () => void dispose();
     },

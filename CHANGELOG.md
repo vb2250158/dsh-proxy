@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.7
+
+- Replace the shared /api interceptor with four exact POST routes. Version 0.1.6 prevented Typert methods such as webviewArchive/setup and session/list from dispatching, leaving the frontend on its plugin-loading error screen.
+- Preserve request-envelope validation and caller RPC IDs. Route teardown removes only proxy-owned registrations.
+- Validation: typecheck, 82 tests including unrelated endpoint delegation, and rebuilt artifacts.
+
 ## 0.1.6
 
 - Register settings endpoints under /api/dsh-proxy through the shared Connection interceptor. Dedicated-channel registration in 0.1.4 and 0.1.5 fails against current Cordis; use 0.1.6 or later.

@@ -19,6 +19,7 @@ import type {} from '@deepseek-ai/dsh-host-webserver'
 import type {} from '@deepseek-ai/dsh-client-connection'
 import { dshHomePath } from '@deepseek-ai/dsh-home-paths'
 import { ProxyController } from './controller.ts'
+import { registerProxyRoutes, type FetchRegistry } from './rpc-routes.ts'
 import { RPC_CHANNEL, RPC_START_ENDPOINT, RPC_STATUS_ENDPOINT, RPC_STOP_ENDPOINT, RPC_UPDATE_ENDPOINT } from './contract.ts'
 
 // Standalone API for scripts and smoke tests, exercised through the same
@@ -95,9 +96,9 @@ export function apply(ctx: Context, config?: Config): void {
 
   ctx.effect(
     () => {
-      const dispose = connection.rpc.intercept(
-        RPC_CHANNEL,
-        (endpoint) => [RPC_STATUS_ENDPOINT, RPC_START_ENDPOINT, RPC_STOP_ENDPOINT, RPC_UPDATE_ENDPOINT].includes(endpoint),
+      const dispose = registerProxyRoutes(
+        (connection as unknown as { fetch: FetchRegistry }).fetch,
+        [RPC_STATUS_ENDPOINT, RPC_START_ENDPOINT, RPC_STOP_ENDPOINT, RPC_UPDATE_ENDPOINT],
         async (endpoint, payload) => {
           if (endpoint === RPC_STATUS_ENDPOINT) {
             return { ok: true, value: await controller.refreshStatus() }
@@ -137,10 +138,6 @@ export function apply(ctx: Context, config?: Config): void {
             },
           }
         },
-        // The channel is loopback-only: through the proxy (Host rewritten to
-        // loopback) and direct loopback both pass; nothing else may mutate
-        // the proxy's credentials.
-        { authority: 'loopback' },
       )
       return () => void dispose()
     },

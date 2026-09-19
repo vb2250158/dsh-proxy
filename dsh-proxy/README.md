@@ -99,3 +99,5 @@ pnpm run smoke   # full live smoke test against a running DSH on 127.0.0.1:3080
 The plugin uses the Host Connection public browser-auth API after successful Basic Auth. The generated upstream cookie remains server-side and is never returned to remote browsers. HTTP and WebSocket forwarding share this exchange. The current Host must provide authenticatedUrl and authorizeIndex. Existing local port and login settings remain unchanged.
 
 The integrated proxy refuses to listen until both username and password are configured in local settings.
+
+0.1.7: Settings own only POST /api/dsh-proxy/{status,update,start,stop}; all other API dispatch remains with DSH. Upgrade from 0.1.6 to restore frontend loading.
