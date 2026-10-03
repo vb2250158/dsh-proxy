@@ -14,6 +14,8 @@ A DeepSeek Harness plugin that exposes the local DSH web app (default `127.0.0.1
 
 ## Install
 
+Settings → LAN Proxy includes a collapsible ZeroTier setup guide with official downloads, network enrollment, administrator authorization and mobile-data verification steps. It does not install software or change network settings. Remote access retains proxy authentication and requires an HTTPS certificate covering the computer’s ZeroTier address. ONLINE does not guarantee a direct peer connection; relaying can affect performance.
+
 **Online install (recommended)** — directly from GitHub, no need to download the repository:
 
 ```bash

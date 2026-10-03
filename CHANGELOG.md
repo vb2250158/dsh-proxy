@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.10 — 2026-10-03
+
+- Add a collapsible bilingual ZeroTier installation guide to LAN Proxy settings, with official downloads, network authorization, HTTPS access and mobile-data verification.
+- Keep network IDs and device addresses out of shipped guidance; explain that ONLINE does not guarantee P2P connectivity.
+- Validation: typecheck, 87 tests and rebuilt client artifacts. No configuration migration.
+
 ## 0.1.9
 
 - Add an optional authenticated HTTPS listener for LAN browser microphone access, with HTTPS QR codes and a public CA download/fingerprint.

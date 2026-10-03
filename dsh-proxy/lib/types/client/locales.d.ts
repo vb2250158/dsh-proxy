@@ -2,6 +2,17 @@
 export declare const NS = "dsh-proxy";
 /** Simplified Chinese dictionary (the key-set source of truth). */
 export declare const zh: {
+    'zerotier.title': string;
+    'zerotier.install': string;
+    'zerotier.join': string;
+    'zerotier.authorize': string;
+    'zerotier.open': string;
+    'zerotier.verify': string;
+    'zerotier.download': string;
+    'zerotier.console': string;
+    'zerotier.help': string;
+    'zerotier.routing': string;
+    'zerotier.relay': string;
     'status.ca': string;
     'status.trust': string;
     'status.lanUrls': string;

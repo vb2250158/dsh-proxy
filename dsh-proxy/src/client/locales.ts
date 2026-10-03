@@ -10,6 +10,17 @@ export const NS = 'dsh-proxy'
 
 /** Simplified Chinese dictionary (the key-set source of truth). */
 export const zh = {
+  'zerotier.title': 'ZeroTier 安装引导',
+  'zerotier.install': '在运行 DSH 的电脑和手机上安装 ZeroTier One。官方下载页提供 Windows、Android 和 iOS 入口。',
+  'zerotier.join': '在控制台创建私有网络，或向网络管理员获取 16 位 Network ID；电脑和手机加入同一个网络。',
+  'zerotier.authorize': '由网络管理员授权两台设备；在手机上允许 VPN 连接，确认两端都获得 ZeroTier IP 地址。',
+  'zerotier.open': '启用本页的密码登录，使用电脑的 ZeroTier IP 和代理 HTTPS 端口打开 DSH。证书必须覆盖该地址并被手机信任；不要使用默认服务端口。',
+  'zerotier.verify': '手机关闭 Wi-Fi、打开移动数据，保持 ZeroTier 连接，再访问 DSH 并登录。页面加载和聊天可用后，才算外网验证通过。',
+  'zerotier.download': '官方下载（电脑 / 手机）',
+  'zerotier.console': '打开网络控制台',
+  'zerotier.help': '官方入网说明',
+  'zerotier.routing': '仅访问 DSH 时，不要开启“全部流量经过 ZeroTier”。麦克风需要受信任的 HTTPS；使用本页 CA 前请核对证书指纹。',
+  'zerotier.relay': 'ONLINE 不代表两台设备已直连。DIRECT 表示直连，RELAY 表示中继，速度可能较慢；安装完成不保证 P2P 成功。',
   'status.ca': '下载安卓 CA 证书',
   'status.trust': '首次使用：下载证书，在安卓设置中安装为 CA 证书，再扫描 HTTPS 二维码。安装前核对下方 SHA-256 指纹。',
   'status.lanUrls': '浏览器访问',
@@ -72,6 +83,17 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
 
 /** English dictionary, checked complete against the zh key set. */
 export const en: Record<LanProxyKey, string> = {
+  'zerotier.title': 'ZeroTier setup guide',
+  'zerotier.install': 'Install ZeroTier One on the computer running DSH and on your phone. The official download page has Windows, Android and iOS options.',
+  'zerotier.join': 'Create a private network in Central, or ask its administrator for the 16-character Network ID. Join the same network on both devices.',
+  'zerotier.authorize': 'Ask the network administrator to authorize both devices. Allow the VPN connection on your phone and confirm that both devices have a ZeroTier IP address.',
+  'zerotier.open': 'Enable password login on this page. Open DSH using the computer’s ZeroTier IP and the proxy HTTPS port. The certificate must cover that address and be trusted by your phone. Do not use the default service port.',
+  'zerotier.verify': 'Turn off Wi-Fi and enable mobile data on your phone, keep ZeroTier connected, then open DSH and sign in. Verify that the page loads and chat works over mobile data.',
+  'zerotier.download': 'Official downloads (computer / phone)',
+  'zerotier.console': 'Open network console',
+  'zerotier.help': 'Official setup instructions',
+  'zerotier.routing': 'For DSH access alone, leave “Route all traffic through ZeroTier” off. Microphone access requires trusted HTTPS. Verify the certificate fingerprint before installing the CA from this page.',
+  'zerotier.relay': 'ONLINE does not prove a direct connection between devices. DIRECT means direct; RELAY means relayed and may be slower. Installation does not guarantee P2P connectivity.',
   'status.ca': 'Download Android CA certificate',
   'status.trust': 'First use: install this CA certificate in Android settings, then scan the HTTPS code. Verify the SHA-256 fingerprint below.',
   'status.lanUrls': 'Browser access',

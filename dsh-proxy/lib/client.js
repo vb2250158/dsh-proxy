@@ -2397,6 +2397,23 @@ function SettingsSection({ rpc, t }) {
       controlMessage !== null ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "dsh_lanproxy_message", children: controlMessage }) : null,
       controlError !== null ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "dsh_lanproxy_error", children: controlError }) : null
     ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("details", { className: "dsh_lanproxy_card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("summary", { className: "dsh_lanproxy_cardTitle", style: { cursor: "pointer" }, children: t("zerotier.title") }),
+      /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("ol", { style: { paddingInlineStart: "24px", lineHeight: 1.7 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("li", { children: t("zerotier.install") }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("li", { children: t("zerotier.join") }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("li", { children: t("zerotier.authorize") }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("li", { children: t("zerotier.open") }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("li", { children: t("zerotier.verify") })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { style: { display: "flex", flexWrap: "wrap", gap: "16px" }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "https://www.zerotier.com/download/", target: "_blank", rel: "noopener noreferrer", style: { color: "var(--dsw-alias-brand-primary)" }, children: t("zerotier.download") }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "https://central.zerotier.com/", target: "_blank", rel: "noopener noreferrer", style: { color: "var(--dsw-alias-brand-primary)" }, children: t("zerotier.console") }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("a", { href: "https://docs.zerotier.com/start/", target: "_blank", rel: "noopener noreferrer", style: { color: "var(--dsw-alias-brand-primary)" }, children: t("zerotier.help") })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "dsh_lanproxy_hint", children: t("zerotier.routing") }),
+      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "dsh_lanproxy_hint", children: t("zerotier.relay") })
+    ] }),
     /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("form", { className: "dsh_lanproxy_card dsh_lanproxy_form", onSubmit: (event) => {
       void submit(event);
     }, children: [
@@ -2481,6 +2498,17 @@ function SettingsSection({ rpc, t }) {
 // src/client/locales.ts
 var NS = "dsh-proxy";
 var zh = {
+  "zerotier.title": "ZeroTier \u5B89\u88C5\u5F15\u5BFC",
+  "zerotier.install": "\u5728\u8FD0\u884C DSH \u7684\u7535\u8111\u548C\u624B\u673A\u4E0A\u5B89\u88C5 ZeroTier One\u3002\u5B98\u65B9\u4E0B\u8F7D\u9875\u63D0\u4F9B Windows\u3001Android \u548C iOS \u5165\u53E3\u3002",
+  "zerotier.join": "\u5728\u63A7\u5236\u53F0\u521B\u5EFA\u79C1\u6709\u7F51\u7EDC\uFF0C\u6216\u5411\u7F51\u7EDC\u7BA1\u7406\u5458\u83B7\u53D6 16 \u4F4D Network ID\uFF1B\u7535\u8111\u548C\u624B\u673A\u52A0\u5165\u540C\u4E00\u4E2A\u7F51\u7EDC\u3002",
+  "zerotier.authorize": "\u7531\u7F51\u7EDC\u7BA1\u7406\u5458\u6388\u6743\u4E24\u53F0\u8BBE\u5907\uFF1B\u5728\u624B\u673A\u4E0A\u5141\u8BB8 VPN \u8FDE\u63A5\uFF0C\u786E\u8BA4\u4E24\u7AEF\u90FD\u83B7\u5F97 ZeroTier IP \u5730\u5740\u3002",
+  "zerotier.open": "\u542F\u7528\u672C\u9875\u7684\u5BC6\u7801\u767B\u5F55\uFF0C\u4F7F\u7528\u7535\u8111\u7684 ZeroTier IP \u548C\u4EE3\u7406 HTTPS \u7AEF\u53E3\u6253\u5F00 DSH\u3002\u8BC1\u4E66\u5FC5\u987B\u8986\u76D6\u8BE5\u5730\u5740\u5E76\u88AB\u624B\u673A\u4FE1\u4EFB\uFF1B\u4E0D\u8981\u4F7F\u7528\u9ED8\u8BA4\u670D\u52A1\u7AEF\u53E3\u3002",
+  "zerotier.verify": "\u624B\u673A\u5173\u95ED Wi-Fi\u3001\u6253\u5F00\u79FB\u52A8\u6570\u636E\uFF0C\u4FDD\u6301 ZeroTier \u8FDE\u63A5\uFF0C\u518D\u8BBF\u95EE DSH \u5E76\u767B\u5F55\u3002\u9875\u9762\u52A0\u8F7D\u548C\u804A\u5929\u53EF\u7528\u540E\uFF0C\u624D\u7B97\u5916\u7F51\u9A8C\u8BC1\u901A\u8FC7\u3002",
+  "zerotier.download": "\u5B98\u65B9\u4E0B\u8F7D\uFF08\u7535\u8111 / \u624B\u673A\uFF09",
+  "zerotier.console": "\u6253\u5F00\u7F51\u7EDC\u63A7\u5236\u53F0",
+  "zerotier.help": "\u5B98\u65B9\u5165\u7F51\u8BF4\u660E",
+  "zerotier.routing": "\u4EC5\u8BBF\u95EE DSH \u65F6\uFF0C\u4E0D\u8981\u5F00\u542F\u201C\u5168\u90E8\u6D41\u91CF\u7ECF\u8FC7 ZeroTier\u201D\u3002\u9EA6\u514B\u98CE\u9700\u8981\u53D7\u4FE1\u4EFB\u7684 HTTPS\uFF1B\u4F7F\u7528\u672C\u9875 CA \u524D\u8BF7\u6838\u5BF9\u8BC1\u4E66\u6307\u7EB9\u3002",
+  "zerotier.relay": "ONLINE \u4E0D\u4EE3\u8868\u4E24\u53F0\u8BBE\u5907\u5DF2\u76F4\u8FDE\u3002DIRECT \u8868\u793A\u76F4\u8FDE\uFF0CRELAY \u8868\u793A\u4E2D\u7EE7\uFF0C\u901F\u5EA6\u53EF\u80FD\u8F83\u6162\uFF1B\u5B89\u88C5\u5B8C\u6210\u4E0D\u4FDD\u8BC1 P2P \u6210\u529F\u3002",
   "status.ca": "\u4E0B\u8F7D\u5B89\u5353 CA \u8BC1\u4E66",
   "status.trust": "\u9996\u6B21\u4F7F\u7528\uFF1A\u4E0B\u8F7D\u8BC1\u4E66\uFF0C\u5728\u5B89\u5353\u8BBE\u7F6E\u4E2D\u5B89\u88C5\u4E3A CA \u8BC1\u4E66\uFF0C\u518D\u626B\u63CF HTTPS \u4E8C\u7EF4\u7801\u3002\u5B89\u88C5\u524D\u6838\u5BF9\u4E0B\u65B9 SHA-256 \u6307\u7EB9\u3002",
   "status.lanUrls": "\u6D4F\u89C8\u5668\u8BBF\u95EE",
@@ -2532,6 +2560,17 @@ var zh = {
   "form.failed": "\u4FDD\u5B58\u5931\u8D25"
 };
 var en = {
+  "zerotier.title": "ZeroTier setup guide",
+  "zerotier.install": "Install ZeroTier One on the computer running DSH and on your phone. The official download page has Windows, Android and iOS options.",
+  "zerotier.join": "Create a private network in Central, or ask its administrator for the 16-character Network ID. Join the same network on both devices.",
+  "zerotier.authorize": "Ask the network administrator to authorize both devices. Allow the VPN connection on your phone and confirm that both devices have a ZeroTier IP address.",
+  "zerotier.open": "Enable password login on this page. Open DSH using the computer\u2019s ZeroTier IP and the proxy HTTPS port. The certificate must cover that address and be trusted by your phone. Do not use the default service port.",
+  "zerotier.verify": "Turn off Wi-Fi and enable mobile data on your phone, keep ZeroTier connected, then open DSH and sign in. Verify that the page loads and chat works over mobile data.",
+  "zerotier.download": "Official downloads (computer / phone)",
+  "zerotier.console": "Open network console",
+  "zerotier.help": "Official setup instructions",
+  "zerotier.routing": "For DSH access alone, leave \u201CRoute all traffic through ZeroTier\u201D off. Microphone access requires trusted HTTPS. Verify the certificate fingerprint before installing the CA from this page.",
+  "zerotier.relay": "ONLINE does not prove a direct connection between devices. DIRECT means direct; RELAY means relayed and may be slower. Installation does not guarantee P2P connectivity.",
   "status.ca": "Download Android CA certificate",
   "status.trust": "First use: install this CA certificate in Android settings, then scan the HTTPS code. Verify the SHA-256 fingerprint below.",
   "status.lanUrls": "Browser access",

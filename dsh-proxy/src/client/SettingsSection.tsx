@@ -322,6 +322,24 @@ export function SettingsSection({ rpc, t }: SettingsSectionProps) {
         {controlError !== null ? <p className="dsh_lanproxy_error">{controlError}</p> : null}
       </div>
 
+      <details className="dsh_lanproxy_card">
+        <summary className="dsh_lanproxy_cardTitle" style={{ cursor: 'pointer' }}>{t('zerotier.title')}</summary>
+        <ol style={{ paddingInlineStart: '24px', lineHeight: 1.7 }}>
+          <li>{t('zerotier.install')}</li>
+          <li>{t('zerotier.join')}</li>
+          <li>{t('zerotier.authorize')}</li>
+          <li>{t('zerotier.open')}</li>
+          <li>{t('zerotier.verify')}</li>
+        </ol>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
+          <a href="https://www.zerotier.com/download/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--dsw-alias-brand-primary)' }}>{t('zerotier.download')}</a>
+          <a href="https://central.zerotier.com/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--dsw-alias-brand-primary)' }}>{t('zerotier.console')}</a>
+          <a href="https://docs.zerotier.com/start/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--dsw-alias-brand-primary)' }}>{t('zerotier.help')}</a>
+        </div>
+        <p className="dsh_lanproxy_hint">{t('zerotier.routing')}</p>
+        <p className="dsh_lanproxy_hint">{t('zerotier.relay')}</p>
+      </details>
+
       <form className="dsh_lanproxy_card dsh_lanproxy_form" onSubmit={(event) => { void submit(event) }}>
         <div>
           <div className="dsh_lanproxy_cardTitle">{t('form.title')}</div>

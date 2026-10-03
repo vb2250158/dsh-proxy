@@ -113,7 +113,8 @@ describe('status card', () => {
     const { rpc } = makeRpc({ status: async () => ({ ok: true, value: { ...STATUS, proxyListening: false, lanUrls: [] } }) })
     mounted = mount(<SettingsSection {...props(rpc)} />)
     await flush()
-    expect(mounted.container.querySelector('a')).toBeNull()
+    expect(mounted.container.querySelector('div.dsh_lanproxy_card a')).toBeNull()
+    expect(mounted.container.querySelector('details a')?.getAttribute('href')).toBe('https://www.zerotier.com/download/')
     expect(mounted.container.querySelector('img')).toBeNull()
   })
 
