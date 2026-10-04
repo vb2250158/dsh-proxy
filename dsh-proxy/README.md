@@ -4,7 +4,7 @@ A DeepSeek Harness plugin that exposes the local DSH web app (default `127.0.0.1
 
 - **HTTP + WebSocket reverse proxy** — real-time streams keep working.
 - **Native Basic Auth (off by default)** — the same model as the standalone dsh-proxy: the **browser's own credential dialog**, no custom login page, no session cookies. Username and password default to empty (open LAN access); setting **both** in the settings page turns password login on, after which unauthenticated requests are answered with `401 + WWW-Authenticate: Basic` and the browser pops its native dialog. After a successful login the browser caches the credentials for the origin and sends them automatically (including on WebSocket handshakes).
-- **Settings page** — DSH settings → "LAN Proxy": shows the running ports and whether password login is enabled, **starts/stops the proxy**, and edits the proxy listen port, username, and password; saving persists the patch to `$DSH_HOME/dsh-proxy.json` and immediately restarts the forwarding service.
+- **Settings page** — DSH settings → "Network Proxy": shows the running ports and whether password login is enabled, **starts/stops the proxy**, and edits the proxy listen port, username, and password; saving persists the patch to `$DSH_HOME/dsh-proxy.json` and immediately restarts the forwarding service.
 - **Out-of-the-box compatibility fixes** — `Host`/`Origin` rewriting (passes the DSH `/api` same-origin trust fence from the LAN) and a `crypto.randomUUID` polyfill injected into proxied HTML (non-secure LAN contexts lack it, which would break every RPC).
 - **Lives inside `dsh web`** — no separate process; configured through the profile's `cordis.patch.yml`.
 
@@ -14,7 +14,7 @@ A DeepSeek Harness plugin that exposes the local DSH web app (default `127.0.0.1
 
 ## Install
 
-Settings → LAN Proxy includes a collapsible ZeroTier setup guide with official downloads, network enrollment, administrator authorization and mobile-data verification steps. It does not install software or change network settings. Remote access retains proxy authentication and requires an HTTPS certificate covering the computer’s ZeroTier address. ONLINE does not guarantee a direct peer connection; relaying can affect performance.
+Settings → Network Proxy includes a collapsible ZeroTier setup guide with official downloads, network enrollment, administrator authorization and mobile-data verification steps. It does not install software or change network settings. Remote access retains proxy authentication and requires an HTTPS certificate covering the computer’s ZeroTier address. ONLINE does not guarantee a direct peer connection; relaying can affect performance.
 
 **Online install (recommended)** — directly from GitHub, no need to download the repository:
 
@@ -52,7 +52,7 @@ All knobs have schema defaults; override them in the **profile's `cordis.patch.y
 
 ## Settings page (port / credentials / start-stop)
 
-After restarting `dsh web`, open DSH settings (gear icon) → "LAN Proxy":
+After restarting `dsh web`, open DSH settings (gear icon) → "Network Proxy":
 
 - **Status**: two red/green running lights — the **proxy port** (listen address:port; green = the proxy is actually bound, red = bind failed e.g. port busy) and the **default service port** (DSH service port; green = the default service answers a probe, red = unreachable) — plus the current username and whether password login is enabled. A **Start/Stop** button pair sits in the card header: Start is grayed out while running, Stop is grayed out while stopped.
 - **Edit settings**: change the **proxy listen port**, **username**, and **password** (leave empty to set blank). "Apply" writes `$DSH_HOME/dsh-proxy.json` and **immediately restarts the forwarding service**; changing the listen port moves the LAN access address.
