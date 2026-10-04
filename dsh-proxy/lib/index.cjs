@@ -454,14 +454,438 @@ var require_web_outgoing = __commonJS({
   }
 });
 
-// node_modules/.pnpm/follow-redirects@1.16.0/node_modules/follow-redirects/debug.js
+// node_modules/.pnpm/ms@2.0.0/node_modules/ms/index.js
+var require_ms = __commonJS({
+  "node_modules/.pnpm/ms@2.0.0/node_modules/ms/index.js"(exports2, module2) {
+    var s = 1e3;
+    var m = s * 60;
+    var h = m * 60;
+    var d = h * 24;
+    var y = d * 365.25;
+    module2.exports = function(val, options) {
+      options = options || {};
+      var type = typeof val;
+      if (type === "string" && val.length > 0) {
+        return parse(val);
+      } else if (type === "number" && isNaN(val) === false) {
+        return options.long ? fmtLong(val) : fmtShort(val);
+      }
+      throw new Error(
+        "val is not a non-empty string or a valid number. val=" + JSON.stringify(val)
+      );
+    };
+    function parse(str) {
+      str = String(str);
+      if (str.length > 100) {
+        return;
+      }
+      var match = /^((?:\d+)?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|years?|yrs?|y)?$/i.exec(
+        str
+      );
+      if (!match) {
+        return;
+      }
+      var n = parseFloat(match[1]);
+      var type = (match[2] || "ms").toLowerCase();
+      switch (type) {
+        case "years":
+        case "year":
+        case "yrs":
+        case "yr":
+        case "y":
+          return n * y;
+        case "days":
+        case "day":
+        case "d":
+          return n * d;
+        case "hours":
+        case "hour":
+        case "hrs":
+        case "hr":
+        case "h":
+          return n * h;
+        case "minutes":
+        case "minute":
+        case "mins":
+        case "min":
+        case "m":
+          return n * m;
+        case "seconds":
+        case "second":
+        case "secs":
+        case "sec":
+        case "s":
+          return n * s;
+        case "milliseconds":
+        case "millisecond":
+        case "msecs":
+        case "msec":
+        case "ms":
+          return n;
+        default:
+          return void 0;
+      }
+    }
+    function fmtShort(ms) {
+      if (ms >= d) {
+        return Math.round(ms / d) + "d";
+      }
+      if (ms >= h) {
+        return Math.round(ms / h) + "h";
+      }
+      if (ms >= m) {
+        return Math.round(ms / m) + "m";
+      }
+      if (ms >= s) {
+        return Math.round(ms / s) + "s";
+      }
+      return ms + "ms";
+    }
+    function fmtLong(ms) {
+      return plural(ms, d, "day") || plural(ms, h, "hour") || plural(ms, m, "minute") || plural(ms, s, "second") || ms + " ms";
+    }
+    function plural(ms, n, name2) {
+      if (ms < n) {
+        return;
+      }
+      if (ms < n * 1.5) {
+        return Math.floor(ms / n) + " " + name2;
+      }
+      return Math.ceil(ms / n) + " " + name2 + "s";
+    }
+  }
+});
+
+// node_modules/.pnpm/debug@2.6.9/node_modules/debug/src/debug.js
 var require_debug = __commonJS({
+  "node_modules/.pnpm/debug@2.6.9/node_modules/debug/src/debug.js"(exports2, module2) {
+    exports2 = module2.exports = createDebug.debug = createDebug["default"] = createDebug;
+    exports2.coerce = coerce;
+    exports2.disable = disable;
+    exports2.enable = enable;
+    exports2.enabled = enabled;
+    exports2.humanize = require_ms();
+    exports2.names = [];
+    exports2.skips = [];
+    exports2.formatters = {};
+    var prevTime;
+    function selectColor(namespace) {
+      var hash = 0, i;
+      for (i in namespace) {
+        hash = (hash << 5) - hash + namespace.charCodeAt(i);
+        hash |= 0;
+      }
+      return exports2.colors[Math.abs(hash) % exports2.colors.length];
+    }
+    function createDebug(namespace) {
+      function debug() {
+        if (!debug.enabled) return;
+        var self = debug;
+        var curr = +/* @__PURE__ */ new Date();
+        var ms = curr - (prevTime || curr);
+        self.diff = ms;
+        self.prev = prevTime;
+        self.curr = curr;
+        prevTime = curr;
+        var args = new Array(arguments.length);
+        for (var i = 0; i < args.length; i++) {
+          args[i] = arguments[i];
+        }
+        args[0] = exports2.coerce(args[0]);
+        if ("string" !== typeof args[0]) {
+          args.unshift("%O");
+        }
+        var index = 0;
+        args[0] = args[0].replace(/%([a-zA-Z%])/g, function(match, format) {
+          if (match === "%%") return match;
+          index++;
+          var formatter = exports2.formatters[format];
+          if ("function" === typeof formatter) {
+            var val = args[index];
+            match = formatter.call(self, val);
+            args.splice(index, 1);
+            index--;
+          }
+          return match;
+        });
+        exports2.formatArgs.call(self, args);
+        var logFn = debug.log || exports2.log || console.log.bind(console);
+        logFn.apply(self, args);
+      }
+      debug.namespace = namespace;
+      debug.enabled = exports2.enabled(namespace);
+      debug.useColors = exports2.useColors();
+      debug.color = selectColor(namespace);
+      if ("function" === typeof exports2.init) {
+        exports2.init(debug);
+      }
+      return debug;
+    }
+    function enable(namespaces) {
+      exports2.save(namespaces);
+      exports2.names = [];
+      exports2.skips = [];
+      var split = (typeof namespaces === "string" ? namespaces : "").split(/[\s,]+/);
+      var len = split.length;
+      for (var i = 0; i < len; i++) {
+        if (!split[i]) continue;
+        namespaces = split[i].replace(/\*/g, ".*?");
+        if (namespaces[0] === "-") {
+          exports2.skips.push(new RegExp("^" + namespaces.substr(1) + "$"));
+        } else {
+          exports2.names.push(new RegExp("^" + namespaces + "$"));
+        }
+      }
+    }
+    function disable() {
+      exports2.enable("");
+    }
+    function enabled(name2) {
+      var i, len;
+      for (i = 0, len = exports2.skips.length; i < len; i++) {
+        if (exports2.skips[i].test(name2)) {
+          return false;
+        }
+      }
+      for (i = 0, len = exports2.names.length; i < len; i++) {
+        if (exports2.names[i].test(name2)) {
+          return true;
+        }
+      }
+      return false;
+    }
+    function coerce(val) {
+      if (val instanceof Error) return val.stack || val.message;
+      return val;
+    }
+  }
+});
+
+// node_modules/.pnpm/debug@2.6.9/node_modules/debug/src/browser.js
+var require_browser = __commonJS({
+  "node_modules/.pnpm/debug@2.6.9/node_modules/debug/src/browser.js"(exports2, module2) {
+    exports2 = module2.exports = require_debug();
+    exports2.log = log;
+    exports2.formatArgs = formatArgs;
+    exports2.save = save;
+    exports2.load = load;
+    exports2.useColors = useColors;
+    exports2.storage = "undefined" != typeof chrome && "undefined" != typeof chrome.storage ? chrome.storage.local : localstorage();
+    exports2.colors = [
+      "lightseagreen",
+      "forestgreen",
+      "goldenrod",
+      "dodgerblue",
+      "darkorchid",
+      "crimson"
+    ];
+    function useColors() {
+      if (typeof window !== "undefined" && window.process && window.process.type === "renderer") {
+        return true;
+      }
+      return typeof document !== "undefined" && document.documentElement && document.documentElement.style && document.documentElement.style.WebkitAppearance || // is firebug? http://stackoverflow.com/a/398120/376773
+      typeof window !== "undefined" && window.console && (window.console.firebug || window.console.exception && window.console.table) || // is firefox >= v31?
+      // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
+      typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/) && parseInt(RegExp.$1, 10) >= 31 || // double check webkit in userAgent just in case we are in a worker
+      typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/applewebkit\/(\d+)/);
+    }
+    exports2.formatters.j = function(v) {
+      try {
+        return JSON.stringify(v);
+      } catch (err) {
+        return "[UnexpectedJSONParseError]: " + err.message;
+      }
+    };
+    function formatArgs(args) {
+      var useColors2 = this.useColors;
+      args[0] = (useColors2 ? "%c" : "") + this.namespace + (useColors2 ? " %c" : " ") + args[0] + (useColors2 ? "%c " : " ") + "+" + exports2.humanize(this.diff);
+      if (!useColors2) return;
+      var c = "color: " + this.color;
+      args.splice(1, 0, c, "color: inherit");
+      var index = 0;
+      var lastC = 0;
+      args[0].replace(/%[a-zA-Z%]/g, function(match) {
+        if ("%%" === match) return;
+        index++;
+        if ("%c" === match) {
+          lastC = index;
+        }
+      });
+      args.splice(lastC, 0, c);
+    }
+    function log() {
+      return "object" === typeof console && console.log && Function.prototype.apply.call(console.log, console, arguments);
+    }
+    function save(namespaces) {
+      try {
+        if (null == namespaces) {
+          exports2.storage.removeItem("debug");
+        } else {
+          exports2.storage.debug = namespaces;
+        }
+      } catch (e) {
+      }
+    }
+    function load() {
+      var r;
+      try {
+        r = exports2.storage.debug;
+      } catch (e) {
+      }
+      if (!r && typeof process !== "undefined" && "env" in process) {
+        r = process.env.DEBUG;
+      }
+      return r;
+    }
+    exports2.enable(load());
+    function localstorage() {
+      try {
+        return window.localStorage;
+      } catch (e) {
+      }
+    }
+  }
+});
+
+// node_modules/.pnpm/debug@2.6.9/node_modules/debug/src/node.js
+var require_node = __commonJS({
+  "node_modules/.pnpm/debug@2.6.9/node_modules/debug/src/node.js"(exports2, module2) {
+    var tty = require("tty");
+    var util = require("util");
+    exports2 = module2.exports = require_debug();
+    exports2.init = init;
+    exports2.log = log;
+    exports2.formatArgs = formatArgs;
+    exports2.save = save;
+    exports2.load = load;
+    exports2.useColors = useColors;
+    exports2.colors = [6, 2, 3, 4, 5, 1];
+    exports2.inspectOpts = Object.keys(process.env).filter(function(key) {
+      return /^debug_/i.test(key);
+    }).reduce(function(obj, key) {
+      var prop = key.substring(6).toLowerCase().replace(/_([a-z])/g, function(_, k) {
+        return k.toUpperCase();
+      });
+      var val = process.env[key];
+      if (/^(yes|on|true|enabled)$/i.test(val)) val = true;
+      else if (/^(no|off|false|disabled)$/i.test(val)) val = false;
+      else if (val === "null") val = null;
+      else val = Number(val);
+      obj[prop] = val;
+      return obj;
+    }, {});
+    var fd = parseInt(process.env.DEBUG_FD, 10) || 2;
+    if (1 !== fd && 2 !== fd) {
+      util.deprecate(function() {
+      }, "except for stderr(2) and stdout(1), any other usage of DEBUG_FD is deprecated. Override debug.log if you want to use a different log function (https://git.io/debug_fd)")();
+    }
+    var stream = 1 === fd ? process.stdout : 2 === fd ? process.stderr : createWritableStdioStream(fd);
+    function useColors() {
+      return "colors" in exports2.inspectOpts ? Boolean(exports2.inspectOpts.colors) : tty.isatty(fd);
+    }
+    exports2.formatters.o = function(v) {
+      this.inspectOpts.colors = this.useColors;
+      return util.inspect(v, this.inspectOpts).split("\n").map(function(str) {
+        return str.trim();
+      }).join(" ");
+    };
+    exports2.formatters.O = function(v) {
+      this.inspectOpts.colors = this.useColors;
+      return util.inspect(v, this.inspectOpts);
+    };
+    function formatArgs(args) {
+      var name2 = this.namespace;
+      var useColors2 = this.useColors;
+      if (useColors2) {
+        var c = this.color;
+        var prefix = "  \x1B[3" + c + ";1m" + name2 + " \x1B[0m";
+        args[0] = prefix + args[0].split("\n").join("\n" + prefix);
+        args.push("\x1B[3" + c + "m+" + exports2.humanize(this.diff) + "\x1B[0m");
+      } else {
+        args[0] = (/* @__PURE__ */ new Date()).toUTCString() + " " + name2 + " " + args[0];
+      }
+    }
+    function log() {
+      return stream.write(util.format.apply(util, arguments) + "\n");
+    }
+    function save(namespaces) {
+      if (null == namespaces) {
+        delete process.env.DEBUG;
+      } else {
+        process.env.DEBUG = namespaces;
+      }
+    }
+    function load() {
+      return process.env.DEBUG;
+    }
+    function createWritableStdioStream(fd2) {
+      var stream2;
+      var tty_wrap = process.binding("tty_wrap");
+      switch (tty_wrap.guessHandleType(fd2)) {
+        case "TTY":
+          stream2 = new tty.WriteStream(fd2);
+          stream2._type = "tty";
+          if (stream2._handle && stream2._handle.unref) {
+            stream2._handle.unref();
+          }
+          break;
+        case "FILE":
+          var fs = require("fs");
+          stream2 = new fs.SyncWriteStream(fd2, { autoClose: false });
+          stream2._type = "fs";
+          break;
+        case "PIPE":
+        case "TCP":
+          var net = require("net");
+          stream2 = new net.Socket({
+            fd: fd2,
+            readable: false,
+            writable: true
+          });
+          stream2.readable = false;
+          stream2.read = null;
+          stream2._type = "pipe";
+          if (stream2._handle && stream2._handle.unref) {
+            stream2._handle.unref();
+          }
+          break;
+        default:
+          throw new Error("Implement me. Unknown stream file type!");
+      }
+      stream2.fd = fd2;
+      stream2._isStdio = true;
+      return stream2;
+    }
+    function init(debug) {
+      debug.inspectOpts = {};
+      var keys = Object.keys(exports2.inspectOpts);
+      for (var i = 0; i < keys.length; i++) {
+        debug.inspectOpts[keys[i]] = exports2.inspectOpts[keys[i]];
+      }
+    }
+    exports2.enable(load());
+  }
+});
+
+// node_modules/.pnpm/debug@2.6.9/node_modules/debug/src/index.js
+var require_src = __commonJS({
+  "node_modules/.pnpm/debug@2.6.9/node_modules/debug/src/index.js"(exports2, module2) {
+    if (typeof process !== "undefined" && process.type === "renderer") {
+      module2.exports = require_browser();
+    } else {
+      module2.exports = require_node();
+    }
+  }
+});
+
+// node_modules/.pnpm/follow-redirects@1.16.0/node_modules/follow-redirects/debug.js
+var require_debug2 = __commonJS({
   "node_modules/.pnpm/follow-redirects@1.16.0/node_modules/follow-redirects/debug.js"(exports2, module2) {
     var debug;
     module2.exports = function() {
       if (!debug) {
         try {
-          debug = require("debug")("follow-redirects");
+          debug = require_src()("follow-redirects");
         } catch (error) {
         }
         if (typeof debug !== "function") {
@@ -483,7 +907,7 @@ var require_follow_redirects = __commonJS({
     var https2 = require("https");
     var Writable = require("stream").Writable;
     var assert = require("assert");
-    var debug = require_debug();
+    var debug = require_debug2();
     (function detectUnsupportedEnvironment() {
       var looksLikeNode = typeof process !== "undefined";
       var looksLikeBrowser = typeof window !== "undefined" && typeof document !== "undefined";
@@ -1399,7 +1823,7 @@ __export(index_exports, {
 });
 module.exports = __toCommonJS(index_exports);
 
-// node_modules/.pnpm/@deepseek-ai+cosmokit@1.8.2/node_modules/@deepseek-ai/cosmokit/lib/index.js
+// ../../../../Users/Admin/.dsh/backups/core-upgrade-20261004-134142/candidate/vendor/cosmokit/src/misc.ts
 function isNullable(value) {
   return value === null || value === void 0;
 }
@@ -1415,9 +1839,43 @@ function mapValues(object, transform) {
 function pick(source, keys, forced) {
   if (!keys) return { ...source };
   const result = {};
-  for (const key of keys) if (forced || source[key] !== void 0) result[key] = source[key];
+  for (const key of keys) {
+    if (forced || source[key] !== void 0) result[key] = source[key];
+  }
   return result;
 }
+
+// ../../../../Users/Admin/.dsh/backups/core-upgrade-20261004-134142/candidate/vendor/cosmokit/src/volatile.ts
+var write = /* @__PURE__ */ Symbol.for("cosmokit.volatile.write");
+function snapshot(value, ancestors = /* @__PURE__ */ new Set()) {
+  if (typeof value === "function") throw new TypeError("volatile config cannot contain functions");
+  if (value === null || typeof value !== "object") return value;
+  if (ancestors.has(value)) throw new TypeError("volatile config cannot contain cycles");
+  ancestors.add(value);
+  try {
+    if (Array.isArray(value)) return Object.freeze(value.map((item) => snapshot(item, ancestors)));
+    if (Object.getPrototypeOf(value) !== Object.prototype && Object.getPrototypeOf(value) !== null) {
+      throw new TypeError("volatile config objects must be plain objects or arrays");
+    }
+    return Object.freeze(Object.fromEntries(Object.entries(value).map(([key, item]) => [key, snapshot(item, ancestors)])));
+  } finally {
+    ancestors.delete(value);
+  }
+}
+function createVolatile(value) {
+  let current = snapshot(value);
+  return Object.freeze({
+    get: () => current,
+    [write]: (value2) => {
+      current = value2;
+    }
+  });
+}
+function isVolatile(value) {
+  return typeof value === "object" && value !== null && write in value;
+}
+
+// ../../../../Users/Admin/.dsh/backups/core-upgrade-20261004-134142/candidate/vendor/cosmokit/src/types.ts
 function is(type, value) {
   if (arguments.length === 1) return (value2) => is(type, value2);
   return type in globalThis && value instanceof globalThis[type] || Object.prototype.toString.call(value).slice(8, -1) === type;
@@ -1429,20 +1887,27 @@ function isArrayBufferSource(value) {
   return isArrayBufferLike(value) || ArrayBuffer.isView(value);
 }
 var Binary;
-(function(Binary2) {
+((Binary2) => {
   Binary2.is = isArrayBufferLike;
   Binary2.isSource = isArrayBufferSource;
   function fromSource(source) {
-    if (ArrayBuffer.isView(source)) return source.buffer.slice(source.byteOffset, source.byteOffset + source.byteLength);
-    else return source;
+    if (ArrayBuffer.isView(source)) {
+      return source.buffer.slice(source.byteOffset, source.byteOffset + source.byteLength);
+    } else {
+      return source;
+    }
   }
   Binary2.fromSource = fromSource;
   function toBase64(source) {
     source = fromSource(source);
-    if (typeof Buffer !== "undefined") return Buffer.from(source).toString("base64");
+    if (typeof Buffer !== "undefined") {
+      return Buffer.from(source).toString("base64");
+    }
     let binary = "";
     const bytes = new Uint8Array(source);
-    for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
     return btoa(binary);
   }
   Binary2.toBase64 = toBase64;
@@ -1461,7 +1926,9 @@ var Binary;
     if (typeof Buffer !== "undefined") return fromSource(Buffer.from(source, "hex"));
     const hex = source.length % 2 === 0 ? source : source.slice(0, source.length - 1);
     const buffer = [];
-    for (let i = 0; i < hex.length; i += 2) buffer.push(parseInt(`${hex[i]}${hex[i + 1]}`, 16));
+    for (let i = 0; i < hex.length; i += 2) {
+      buffer.push(parseInt(`${hex[i]}${hex[i + 1]}`, 16));
+    }
     return Uint8Array.from(buffer).buffer;
   }
   Binary2.fromHex = fromHex;
@@ -1490,33 +1957,51 @@ function clone(source, refs = /* @__PURE__ */ new Map()) {
   refs.set(source, result);
   for (const key of Reflect.ownKeys(source)) {
     const descriptor = { ...Reflect.getOwnPropertyDescriptor(source, key) };
-    if ("value" in descriptor) descriptor.value = Reflect.apply(clone, null, [descriptor.value, refs]);
+    if ("value" in descriptor) {
+      descriptor.value = Reflect.apply(clone, null, [descriptor.value, refs]);
+    }
     Reflect.defineProperty(result, key, descriptor);
   }
   return result;
 }
 function deepEqual(a, b, strict) {
-  if (a === b) return true;
-  if (!strict && isNullable(a) && isNullable(b)) return true;
-  if (typeof a !== typeof b) return false;
-  if (typeof a !== "object") return false;
-  if (!a || !b) return false;
-  function check(test, then) {
-    return test(a) ? test(b) ? then(a, b) : false : test(b) ? false : void 0;
+  const ancestors = /* @__PURE__ */ new Set();
+  function compare(a2, b2) {
+    if (a2 === b2) return true;
+    if (isVolatile(a2) || isVolatile(b2)) return isVolatile(a2) && isVolatile(b2);
+    if (!strict && isNullable(a2) && isNullable(b2)) return true;
+    if (typeof a2 !== typeof b2 || typeof a2 !== "object" || !a2 || !b2) return false;
+    if (ancestors.has(a2)) return false;
+    function check(test, then) {
+      return test(a2) ? test(b2) ? then(a2, b2) : false : test(b2) ? false : void 0;
+    }
+    ancestors.add(a2);
+    try {
+      return check(Array.isArray, (a3, b3) => {
+        if (a3.length !== b3.length) return false;
+        for (let index = 0; index < a3.length; index++) {
+          if (!compare(a3[index], b3[index])) return false;
+        }
+        return true;
+      }) ?? check(is("Date"), (a3, b3) => a3.valueOf() === b3.valueOf()) ?? check(is("URL"), (a3, b3) => a3.href === b3.href) ?? check(is("RegExp"), (a3, b3) => a3.source === b3.source && a3.flags === b3.flags) ?? check(isArrayBufferLike, (a3, b3) => {
+        if (a3.byteLength !== b3.byteLength) return false;
+        const viewA = new Uint8Array(a3);
+        const viewB = new Uint8Array(b3);
+        for (let i = 0; i < viewA.length; i++) {
+          if (viewA[i] !== viewB[i]) return false;
+        }
+        return true;
+      }) ?? ((!strict || [a2, b2].every((value) => Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null)) && Object.keys({ ...a2, ...b2 }).every((key) => compare(a2[key], b2[key])));
+    } finally {
+      ancestors.delete(a2);
+    }
   }
-  return check(Array.isArray, (a2, b2) => a2.length === b2.length && a2.every((item, index) => deepEqual(item, b2[index]))) ?? check(is("Date"), (a2, b2) => a2.valueOf() === b2.valueOf()) ?? check(is("RegExp"), (a2, b2) => a2.source === b2.source && a2.flags === b2.flags) ?? check(isArrayBufferLike, (a2, b2) => {
-    if (a2.byteLength !== b2.byteLength) return false;
-    const viewA = new Uint8Array(a2);
-    const viewB = new Uint8Array(b2);
-    for (let i = 0; i < viewA.length; i++) if (viewA[i] !== viewB[i]) return false;
-    return true;
-  }) ?? Object.keys({
-    ...a,
-    ...b
-  }).every((key) => deepEqual(a[key], b[key], strict));
+  return compare(a, b);
 }
+
+// ../../../../Users/Admin/.dsh/backups/core-upgrade-20261004-134142/candidate/vendor/cosmokit/src/time.ts
 var Time;
-(function(Time2) {
+((Time2) => {
   Time2.millisecond = 1;
   Time2.second = 1e3;
   Time2.minute = Time2.second * 60;
@@ -1560,18 +2045,27 @@ var Time;
   Time2.parseTime = parseTime;
   function parseDate(date2) {
     const parsed = parseTime(date2);
-    if (parsed) date2 = Date.now() + parsed;
-    else if (/^\d{1,2}(:\d{1,2}){1,2}$/.test(date2)) date2 = `${(/* @__PURE__ */ new Date()).toLocaleDateString()}-${date2}`;
-    else if (/^\d{1,2}-\d{1,2}-\d{1,2}(:\d{1,2}){1,2}$/.test(date2)) date2 = `${(/* @__PURE__ */ new Date()).getFullYear()}-${date2}`;
+    if (parsed) {
+      date2 = Date.now() + parsed;
+    } else if (/^\d{1,2}(:\d{1,2}){1,2}$/.test(date2)) {
+      date2 = `${(/* @__PURE__ */ new Date()).toLocaleDateString()}-${date2}`;
+    } else if (/^\d{1,2}-\d{1,2}-\d{1,2}(:\d{1,2}){1,2}$/.test(date2)) {
+      date2 = `${(/* @__PURE__ */ new Date()).getFullYear()}-${date2}`;
+    }
     return date2 ? new Date(date2) : /* @__PURE__ */ new Date();
   }
   Time2.parseDate = parseDate;
   function format(ms) {
     const abs = Math.abs(ms);
-    if (abs >= Time2.day - Time2.hour / 2) return Math.round(ms / Time2.day) + "d";
-    else if (abs >= Time2.hour - Time2.minute / 2) return Math.round(ms / Time2.hour) + "h";
-    else if (abs >= Time2.minute - Time2.second / 2) return Math.round(ms / Time2.minute) + "m";
-    else if (abs >= Time2.second) return Math.round(ms / Time2.second) + "s";
+    if (abs >= Time2.day - Time2.hour / 2) {
+      return Math.round(ms / Time2.day) + "d";
+    } else if (abs >= Time2.hour - Time2.minute / 2) {
+      return Math.round(ms / Time2.hour) + "h";
+    } else if (abs >= Time2.minute - Time2.second / 2) {
+      return Math.round(ms / Time2.minute) + "m";
+    } else if (abs >= Time2.second) {
+      return Math.round(ms / Time2.second) + "s";
+    }
     return ms + "ms";
   }
   Time2.format = format;
@@ -1585,7 +2079,7 @@ var Time;
   Time2.template = template;
 })(Time || (Time = {}));
 
-// node_modules/.pnpm/@deepseek-ai+schemastery@3.18.1/node_modules/@deepseek-ai/schemastery/lib/index.mjs
+// ../../../../Users/Admin/.dsh/backups/core-upgrade-20261004-134142/candidate/vendor/schemastery/lib/index.mjs
 var kSchema = /* @__PURE__ */ Symbol.for("schemastery");
 var kValidationError = /* @__PURE__ */ Symbol.for("ValidationError");
 globalThis.__schemastery_index__ ??= 0;
@@ -1762,6 +2256,7 @@ Schema.prototype.pattern = function pattern(regexp) {
   return schema;
 };
 Schema.prototype.simplify = function simplify(value) {
+  if (isVolatile(value)) value = value.get();
   if (deepEqual(value, this.meta.default, this.type === "dict")) return null;
   if (isNullable(value)) return value;
   if (this.type === "object" || this.type === "dict") {
@@ -1819,12 +2314,49 @@ for (const key of [
   };
   return schema;
 } });
+Schema.prototype.volatile = function volatile() {
+  if (this.meta.volatile) throw new TypeError("volatile schema is already wrapped");
+  return this.extra("volatile", true);
+};
 var resolvers = {};
+var checkedVolatile = /* @__PURE__ */ Symbol("checked-volatile-schema");
+function validateVolatileSchema(schema, path = [], blocked = false, seen = /* @__PURE__ */ new Map()) {
+  const states = seen.get(schema) ?? /* @__PURE__ */ new Set();
+  if (states.has(blocked)) return;
+  states.add(blocked);
+  seen.set(schema, states);
+  if (schema.meta?.volatile && blocked) throw new ValidationError("volatile fields require a fixed object path without an enclosing volatile field", { path });
+  const nested = blocked || !!schema.meta?.volatile;
+  if (schema.dict) for (const [key, child] of Object.entries(schema.dict)) validateVolatileSchema(child, [...path, key], nested, seen);
+  if (schema.sKey) validateVolatileSchema(schema.sKey, [...path, "<key>"], true, seen);
+  if (schema.inner && (schema.type !== "lazy" || schema.inner[kSchema])) validateVolatileSchema(schema.inner, [...path, "*"], true, seen);
+  if (schema.list) for (let index = 0; index < schema.list.length; index++) validateVolatileSchema(schema.list[index], [...path, String(index)], true, seen);
+}
 Schema.extend = function extend(type, resolve3) {
   resolvers[type] = resolve3;
 };
 Schema.resolve = function resolve(data, schema, options = {}, strict = false) {
   if (!schema) return [data];
+  if (!options[checkedVolatile]) {
+    validateVolatileSchema(schema, options.path);
+    options = {
+      ...options,
+      [checkedVolatile]: true
+    };
+  }
+  if (schema.meta?.volatile) {
+    const inner = Schema(schema);
+    inner.meta = {
+      ...schema.meta,
+      volatile: false
+    };
+    const [value, adapted] = Schema.resolve(data, inner, options, strict);
+    try {
+      return [createVolatile(value), adapted];
+    } catch (error) {
+      throw new ValidationError(error instanceof Error ? error.message : String(error), options);
+    }
+  }
   if (options.ignore?.(data, schema)) return [data];
   if (isNullable(data) && schema.type !== "lazy") {
     if (schema.meta.required) throw new ValidationError(`missing required value`, options);
@@ -1932,6 +2464,7 @@ Schema.extend("lazy", (data, schema, options, strict) => {
       ...schema.meta,
       ...schema.inner.meta
     };
+    validateVolatileSchema(schema.inner, options.path, true);
   }
   return Schema.resolve(data, schema.inner, options, strict);
 });
@@ -2031,7 +2564,7 @@ function property(data, key, schema, options) {
   } catch (e) {
     if (!options?.autofix) throw e;
     delete data[key];
-    return schema.meta.default;
+    return schema.meta.volatile ? createVolatile(schema.meta.default) : schema.meta.default;
   }
 }
 Schema.extend("array", (data, { inner, meta }, options) => {
@@ -2187,7 +2720,7 @@ defineMethod("transform", [
   "preserve"
 ], ({ inner }, isInner) => inner.toString(isInner));
 
-// node_modules/.pnpm/@deepseek-ai+dsh-home-paths_2113d3a3fac5d5b3dd9a51be8161c769/node_modules/@deepseek-ai/dsh-home-paths/lib/index.js
+// ../../../../Users/Admin/.dsh/backups/core-upgrade-20261004-134142/candidate/packages/util/home-paths/lib/index.js
 var import_node_os = require("node:os");
 var import_node_path = require("node:path");
 var DSH_HOME_DIR_NAME = ".dsh";

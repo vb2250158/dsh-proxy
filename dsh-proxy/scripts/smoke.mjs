@@ -20,6 +20,7 @@ const PASS = process.env.DSH_SMOKE_PASS ?? 'admin'
 
 let passed = 0
 let failed = 0
+let upstreamAuth
 
 function check(name, ok, detail = '') {
   if (ok) {
@@ -70,6 +71,17 @@ function rawUpgrade(port, path, headers) {
 
 async function main() {
   const upstream = `http://127.0.0.1:${UPSTREAM}`
+  if (!process.env.DSH_SMOKE_HOST_LOG) throw new Error('DSH_SMOKE_HOST_LOG must name the running test Host launch log')
+  const log = readFileSync(process.env.DSH_SMOKE_HOST_LOG, 'utf8')
+  const login = [...log.matchAll(/http:\/\/127\.0\.0\.1:\d+\/\?token=[^\s]+/g)].at(-1)?.[0]
+  if (!login) throw new Error('No Host authentication URL in the test launch log')
+  const exchange = await fetch(login, { redirect: 'manual' })
+  const cookie = exchange.headers.get('set-cookie')?.split(';')[0]
+  if (!cookie) throw new Error('Host cookie exchange failed')
+  upstreamAuth = {
+    authenticatedUrl: () => login,
+    authorizeIndex: (_request, response) => { response.writeHead(303, { 'set-cookie': cookie }); response.end(); return true },
+  }
   console.log(`dsh-proxy smoke — upstream ${upstream}, auth ${USER}/***`)
   const handle = startLanProxy({
     listenHost: '127.0.0.1',
@@ -78,6 +90,7 @@ async function main() {
     upstreamPort: UPSTREAM,
     username: USER,
     password: PASS,
+    upstreamAuth,
     log: (level, message) => console.log(`  [proxy:${level}] ${message}`),
   })
   const port = await handle.ready
@@ -121,18 +134,18 @@ async function main() {
     check('favicon served through the proxy', res.status === 200 && (res.headers.get('content-type') ?? '').includes('svg'), `status=${res.status}`)
 
     // 6. trust fence passes: GET /api/events.mux must reach the route (426 upgrade required), not 403
-    res = await fetch(`${base}/api/events.mux`, { headers: { authorization } })
-    check('/api/events.mux reaches the route (426, fence passed)', res.status === 426, `status=${res.status} (403 would mean the Host/Origin rewrite failed)`)
+    res = await fetch(`${base}/api/remote.mux`, { headers: { authorization } })
+    check('non-upgrade GET follows the Host 404 behavior', res.status === 404, `status=${res.status}`)
 
     // 7. websocket with Basic credentials → 101
-    const open = await rawUpgrade(port, '/api/events.mux', {
+    const open = await rawUpgrade(port, '/api/remote.mux', {
       Origin: origin,
       Authorization: authorization,
     })
     check('WS handshake with Basic → 101', open.status === 101, `status=${open.status}`)
 
     // 8. websocket without credentials → 401
-    const denied = await rawUpgrade(port, '/api/events.mux', { Origin: origin })
+    const denied = await rawUpgrade(port, '/api/remote.mux', { Origin: origin })
     check('WS handshake without credentials → 401', denied.status === 401, `status=${denied.status}`)
   } finally {
     await handle.close()
@@ -165,18 +178,21 @@ async function pluginContractPhase() {
   const tempHome = mkdtempSync(join(tmpdir(), 'dsh-proxy-smoke-'))
   process.env.DSH_HOME = tempHome
   try {
-    let registered = null
+    const routes = new Map()
+    const connection = { ...upstreamAuth, fetch: { register: route => { routes.set(route.path, route); return async () => { routes.delete(route.path) } } } }
+    const registered = { async handler(operation, payload) {
+      const method = `dsh-proxy/${operation}`
+      const response = await routes.get(`/api/${method}`).fetch(new Request(`http://127.0.0.1/api/${method}`, {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ type: 'client-request', rpcId: 'smoke', method, payload: payload ?? {} }),
+      }))
+      return (await response.json()).result
+    } }
     const effectFns = []
     const fakeCtx = {
+      get: name => name === 'connection' ? connection : undefined,
       webServer: { port: UPSTREAM, host: '127.0.0.1' },
-      connection: {
-        rpc: {
-          handle: (channel, handler, options) => {
-            registered = { channel, handler, options }
-            return async () => {}
-          },
-        },
-      },
+      connection,
       logger: {
         info: (message) => console.log(`  [plugin:info] ${message}`),
         warn: (message) => console.log(`  [plugin:warn] ${message}`),
@@ -187,12 +203,12 @@ async function pluginContractPhase() {
         return () => {}
       },
     }
-    plugin.apply(fakeCtx, { listenHost: '127.0.0.1', listenPort: 0 })
+    plugin.apply(fakeCtx, { listenHost: '127.0.0.1', listenPort: 0, username: USER, password: PASS })
     const proxyDisposer = await effectFns[0]()
     const rpcCleanup = effectFns[1]()
     check(
-      'RPC channel registered as /dsh-proxy with loopback authority',
-      registered?.channel === '/dsh-proxy' && registered?.options?.authority === 'loopback',
+      'owned Connection Fetch RPC endpoints registered',
+      ['status', 'start', 'stop', 'update'].every(operation => routes.has(`/api/dsh-proxy/${operation}`)),
     )
 
     const status1 = await registered.handler('status', undefined, new AbortController().signal)

@@ -40,29 +40,29 @@ export interface Config {
     password: string;
 }
 /** Configuration schema; deployment-varying bounds stay tunable from cordis.yml. */
-export declare const Config: z<Schemastery.ObjectS<{
-    httpsPort: z<number, number>;
-    tlsCertFile: z<string, string>;
-    tlsKeyFile: z<string, string>;
-    tlsCaFile: z<string, string>;
-    listenHost: z<string, string>;
-    listenPort: z<number, number>;
-    upstreamHost: z<string, string>;
-    upstreamPort: z<number, number>;
-    username: z<string, string>;
-    password: z<string, string>;
-}>, Schemastery.ObjectT<{
-    httpsPort: z<number, number>;
-    tlsCertFile: z<string, string>;
-    tlsKeyFile: z<string, string>;
-    tlsCaFile: z<string, string>;
-    listenHost: z<string, string>;
-    listenPort: z<number, number>;
-    upstreamHost: z<string, string>;
-    upstreamPort: z<number, number>;
-    username: z<string, string>;
-    password: z<string, string>;
-}>>;
+export declare const Config: z<Schemastery.ObjectS<NoInfer<{
+    httpsPort: z<number, number, "defined">;
+    tlsCertFile: z<string, string, "defined">;
+    tlsKeyFile: z<string, string, "defined">;
+    tlsCaFile: z<string, string, "defined">;
+    listenHost: z<string, string, "defined">;
+    listenPort: z<number, number, "defined">;
+    upstreamHost: z<string, string, "defined">;
+    upstreamPort: z<number, number, "defined">;
+    username: z<string, string, "defined">;
+    password: z<string, string, "defined">;
+}>>, Schemastery.ObjectT<NoInfer<{
+    httpsPort: z<number, number, "defined">;
+    tlsCertFile: z<string, string, "defined">;
+    tlsKeyFile: z<string, string, "defined">;
+    tlsCaFile: z<string, string, "defined">;
+    listenHost: z<string, string, "defined">;
+    listenPort: z<number, number, "defined">;
+    upstreamHost: z<string, string, "defined">;
+    upstreamPort: z<number, number, "defined">;
+    username: z<string, string, "defined">;
+    password: z<string, string, "defined">;
+}>>, "plain">;
 /**
  * Mount the proxy and the RPC channel as effects on this plugin's fiber:
  * unloading the plugin closes the listener, every upgraded socket, and the

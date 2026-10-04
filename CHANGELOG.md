@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.11
+
+- Update DSH compatibility requirements and interfaces for 0.2.1-alpha.1.
+
 ## 0.1.10 — 2026-10-03
 
 - Add a collapsible bilingual ZeroTier installation guide to LAN Proxy settings, with official downloads, network authorization, HTTPS access and mobile-data verification.

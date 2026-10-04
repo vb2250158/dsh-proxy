@@ -4,7 +4,11 @@
  * running proxy status and edits the forward target port / username /
  * password through the host `/dsh-proxy` Connection RPC channel.
  */
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import type { Context as ClientContext } from '@deepseek-ai/cordis'
+import type {} from '@deepseek-ai/dsh-api-remotes/client'
+import type {} from '@deepseek-ai/dsh-api-session-controller/client'
+import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
+import type {} from '@deepseek-ai/dsh-client-ui-session/client'
 // Type-only: the settings.section SlotMap entry and its owner props.
 import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
 // Type-only: the ctx.locale Context merge and LocaleNamespaceMap.

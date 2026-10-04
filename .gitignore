@@ -13,3 +13,4 @@ go/config.json
 
 # CI 临时目录
 release-assets/
+node_modules/

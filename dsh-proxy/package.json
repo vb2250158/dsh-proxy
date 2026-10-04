@@ -1,7 +1,7 @@
 {
   "name": "@smanx/dsh-proxy",
   "description": "LAN reverse proxy for the DeepSeek Harness web app: forwards the local DSH port to a second, authenticated port (HTTP + WebSocket) with a web-based login page and a Basic Auth fallback.",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "license": "MIT",
   "type": "module",
   "main": "lib/index.cjs",
@@ -23,11 +23,14 @@
     "client": {
       "platform": "web",
       "inject": [
-        "@deepseek-ai/dsh-client-runtime",
         "@deepseek-ai/dsh-client-ui-slots",
         "@deepseek-ai/dsh-client-ui-settings",
         "@deepseek-ai/dsh-client-locale",
-        "@deepseek-ai/dsh-client-connection"
+        "@deepseek-ai/dsh-client-connection",
+        "@deepseek-ai/dsh-api-remotes",
+        "@deepseek-ai/dsh-api-session-controller",
+        "@deepseek-ai/dsh-client-ui-renderer",
+        "@deepseek-ai/dsh-client-ui-session"
       ]
     }
   },
@@ -47,7 +50,12 @@
     "smoke": "node scripts/smoke.mjs"
   },
   "peerDependencies": {
-    "@deepseek-ai/cordis": "*"
+    "@deepseek-ai/cordis": "*",
+    "@deepseek-ai/schemastery": ">=3.18.1",
+    "@deepseek-ai/dsh-api-remotes": ">=0.2.1-alpha.1 <0.3.0",
+    "@deepseek-ai/dsh-api-session-controller": ">=0.2.1-alpha.1 <0.3.0",
+    "@deepseek-ai/dsh-client-ui-renderer": ">=0.2.1-alpha.1 <0.3.0",
+    "@deepseek-ai/dsh-client-ui-session": ">=0.2.1-alpha.1 <0.3.0"
   },
   "peerDependenciesMeta": {
     "@deepseek-ai/cordis": {
@@ -56,13 +64,12 @@
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "^4.0.1",
-    "@deepseek-ai/dsh-client-connection": "0.1.0-rc.6",
-    "@deepseek-ai/dsh-client-locale": "0.1.0-rc.6",
-    "@deepseek-ai/dsh-client-runtime": "0.1.0-rc.6",
-    "@deepseek-ai/dsh-client-ui-settings": "0.1.0-rc.6",
-    "@deepseek-ai/dsh-client-ui-slots": "0.1.0-rc.6",
-    "@deepseek-ai/dsh-home-paths": "0.1.0-rc.6",
-    "@deepseek-ai/dsh-host-webserver": "0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-connection": "0.2.1-alpha.1",
+    "@deepseek-ai/dsh-client-locale": "0.2.1-alpha.1",
+    "@deepseek-ai/dsh-client-ui-settings": "0.2.1-alpha.1",
+    "@deepseek-ai/dsh-client-ui-slots": "0.2.1-alpha.1",
+    "@deepseek-ai/dsh-home-paths": "0.2.1-alpha.1",
+    "@deepseek-ai/dsh-host-webserver": "0.2.1-alpha.1",
     "@deepseek-ai/schemastery": "^3.18.1",
     "@types/http-proxy": "^1.17.15",
     "@types/node": "^24.0.0",

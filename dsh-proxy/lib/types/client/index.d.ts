@@ -4,7 +4,7 @@
  * running proxy status and edits the forward target port / username /
  * password through the host `/dsh-proxy` Connection RPC channel.
  */
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client';
+import type { Context as ClientContext } from '@deepseek-ai/cordis';
 /** Required services: slots (section registry), locale, and the wire connection. */
 export declare const inject: string[];
 /**

@@ -107,7 +107,7 @@ describe('status card', () => {
     await flush()
     expect(mounted.container.querySelector('a')?.getAttribute('href')).toBe(STATUS.lanUrls[0])
     expect(QRCode.toDataURL).toHaveBeenCalledWith(STATUS.lanUrls[0], expect.objectContaining({ margin: 4 }))
-    expect(mounted.container.querySelector('img')?.alt).toBe(STATUS.lanUrls[0])
+    await vi.waitFor(() => expect(mounted!.container.querySelector('img')?.alt).toBe(STATUS.lanUrls[0]))
   })
   it('shows no scannable URL when the listener is stopped', async () => {
     const { rpc } = makeRpc({ status: async () => ({ ok: true, value: { ...STATUS, proxyListening: false, lanUrls: [] } }) })
