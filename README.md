@@ -109,3 +109,7 @@ git push origin v1.1.0
 ```
 
 工作流见 `.github/workflows/release.yml`。
+
+## Plugin display metadata
+
+The plugin list shows **Network proxy** in English and **网络代理** in Chinese, following the DSH interface language. `locale/en.json` and `locale/zh.json` provide the title and description; `icon.svg` supplies self-contained artwork. The package exports and publishes these resources. The icon is adapted from Lucide; see [ICON_LICENSE.txt](ICON_LICENSE.txt).

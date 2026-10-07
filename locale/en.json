@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Network proxy",
+    "description": "Access local DSH through an authenticated network proxy."
+  }
+}
