@@ -2917,11 +2917,9 @@ function apply(ctx) {
   const t = ctx.locale.bind(NS);
   const connection = ctx.get("connection");
   const rpc = connection.rpc;
-  ctx.slots.inject("settings.section", () => ctx.slots.register({
-    name: "settings.section",
-    id: "dsh-proxy",
-    order: 70,
-    label: () => t("nav"),
+  ctx.slots.inject("plugins.bundle.config", () => ctx.slots.register({
+    name: "plugins.bundle.config",
+    key: "@smanx/dsh-proxy",
     locale: NS,
     inject: () => ({ rpc })
   }, SettingsSection));

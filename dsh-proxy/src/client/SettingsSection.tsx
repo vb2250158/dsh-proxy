@@ -33,7 +33,7 @@ export interface SettingsSectionInjected {
 }
 
 /** Full section props: runtime share + injected face + the locale seat. */
-export type SettingsSectionProps = PropsRuntime<'settings.section'> & InjectFace<SettingsSectionInjected> & PropsLocale<'dsh-proxy'>
+export type SettingsSectionProps = PropsRuntime<'plugins.bundle.config'> & InjectFace<SettingsSectionInjected> & PropsLocale<'dsh-proxy'>
 
 /** Status-card lifecycle phase. */
 type StatusPhase = 'loading' | 'ok' | 'error'

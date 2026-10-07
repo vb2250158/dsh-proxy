@@ -1,3 +1,4 @@
+import type {} from '@deepseek-ai/dsh-client-ui-plugin-manager/client'
 /**
  * dsh-proxy client plugin: the browser half of the LAN-proxy settings
  * page. Registers the `settings.section` entry ("网络代理") that shows the
@@ -36,11 +37,9 @@ export function apply(ctx: ClientContext): void {
   // this single-program build.
   const connection = ctx.get('connection') as unknown as ConnectionHandle
   const rpc = connection.rpc
-  ctx.slots.inject('settings.section', () => ctx.slots.register({
-    name: 'settings.section',
-    id: 'dsh-proxy',
-    order: 70,
-    label: () => t('nav'),
+  ctx.slots.inject('plugins.bundle.config', () => ctx.slots.register({
+    name: 'plugins.bundle.config',
+    key: '@smanx/dsh-proxy',
     locale: NS,
     inject: (): SettingsSectionInjected => ({ rpc }),
   }, SettingsSection))
