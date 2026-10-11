@@ -1823,7 +1823,7 @@ __export(index_exports, {
 });
 module.exports = __toCommonJS(index_exports);
 
-// ../../../../Users/Admin/.dsh/backups/core-upgrade-20261004-134142/candidate/vendor/cosmokit/src/misc.ts
+// node_modules/.pnpm/@deepseek-ai+cosmokit@1.8.6-alpha.1/node_modules/@deepseek-ai/cosmokit/lib/index.js
 function isNullable(value) {
   return value === null || value === void 0;
 }
@@ -1839,13 +1839,9 @@ function mapValues(object, transform) {
 function pick(source, keys, forced) {
   if (!keys) return { ...source };
   const result = {};
-  for (const key of keys) {
-    if (forced || source[key] !== void 0) result[key] = source[key];
-  }
+  for (const key of keys) if (forced || source[key] !== void 0) result[key] = source[key];
   return result;
 }
-
-// ../../../../Users/Admin/.dsh/backups/core-upgrade-20261004-134142/candidate/vendor/cosmokit/src/volatile.ts
 var write = /* @__PURE__ */ Symbol.for("cosmokit.volatile.write");
 function snapshot(value, ancestors = /* @__PURE__ */ new Set()) {
   if (typeof value === "function") throw new TypeError("volatile config cannot contain functions");
@@ -1854,9 +1850,7 @@ function snapshot(value, ancestors = /* @__PURE__ */ new Set()) {
   ancestors.add(value);
   try {
     if (Array.isArray(value)) return Object.freeze(value.map((item) => snapshot(item, ancestors)));
-    if (Object.getPrototypeOf(value) !== Object.prototype && Object.getPrototypeOf(value) !== null) {
-      throw new TypeError("volatile config objects must be plain objects or arrays");
-    }
+    if (Object.getPrototypeOf(value) !== Object.prototype && Object.getPrototypeOf(value) !== null) throw new TypeError("volatile config objects must be plain objects or arrays");
     return Object.freeze(Object.fromEntries(Object.entries(value).map(([key, item]) => [key, snapshot(item, ancestors)])));
   } finally {
     ancestors.delete(value);
@@ -1874,8 +1868,6 @@ function createVolatile(value) {
 function isVolatile(value) {
   return typeof value === "object" && value !== null && write in value;
 }
-
-// ../../../../Users/Admin/.dsh/backups/core-upgrade-20261004-134142/candidate/vendor/cosmokit/src/types.ts
 function is(type, value) {
   if (arguments.length === 1) return (value2) => is(type, value2);
   return type in globalThis && value instanceof globalThis[type] || Object.prototype.toString.call(value).slice(8, -1) === type;
@@ -1887,27 +1879,20 @@ function isArrayBufferSource(value) {
   return isArrayBufferLike(value) || ArrayBuffer.isView(value);
 }
 var Binary;
-((Binary2) => {
+(function(Binary2) {
   Binary2.is = isArrayBufferLike;
   Binary2.isSource = isArrayBufferSource;
   function fromSource(source) {
-    if (ArrayBuffer.isView(source)) {
-      return source.buffer.slice(source.byteOffset, source.byteOffset + source.byteLength);
-    } else {
-      return source;
-    }
+    if (ArrayBuffer.isView(source)) return source.buffer.slice(source.byteOffset, source.byteOffset + source.byteLength);
+    else return source;
   }
   Binary2.fromSource = fromSource;
   function toBase64(source) {
     source = fromSource(source);
-    if (typeof Buffer !== "undefined") {
-      return Buffer.from(source).toString("base64");
-    }
+    if (typeof Buffer !== "undefined") return Buffer.from(source).toString("base64");
     let binary = "";
     const bytes = new Uint8Array(source);
-    for (let i = 0; i < bytes.byteLength; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
+    for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
     return btoa(binary);
   }
   Binary2.toBase64 = toBase64;
@@ -1926,9 +1911,7 @@ var Binary;
     if (typeof Buffer !== "undefined") return fromSource(Buffer.from(source, "hex"));
     const hex = source.length % 2 === 0 ? source : source.slice(0, source.length - 1);
     const buffer = [];
-    for (let i = 0; i < hex.length; i += 2) {
-      buffer.push(parseInt(`${hex[i]}${hex[i + 1]}`, 16));
-    }
+    for (let i = 0; i < hex.length; i += 2) buffer.push(parseInt(`${hex[i]}${hex[i + 1]}`, 16));
     return Uint8Array.from(buffer).buffer;
   }
   Binary2.fromHex = fromHex;
@@ -1957,9 +1940,7 @@ function clone(source, refs = /* @__PURE__ */ new Map()) {
   refs.set(source, result);
   for (const key of Reflect.ownKeys(source)) {
     const descriptor = { ...Reflect.getOwnPropertyDescriptor(source, key) };
-    if ("value" in descriptor) {
-      descriptor.value = Reflect.apply(clone, null, [descriptor.value, refs]);
-    }
+    if ("value" in descriptor) descriptor.value = Reflect.apply(clone, null, [descriptor.value, refs]);
     Reflect.defineProperty(result, key, descriptor);
   }
   return result;
@@ -1979,29 +1960,26 @@ function deepEqual(a, b, strict) {
     try {
       return check(Array.isArray, (a3, b3) => {
         if (a3.length !== b3.length) return false;
-        for (let index = 0; index < a3.length; index++) {
-          if (!compare(a3[index], b3[index])) return false;
-        }
+        for (let index = 0; index < a3.length; index++) if (!compare(a3[index], b3[index])) return false;
         return true;
       }) ?? check(is("Date"), (a3, b3) => a3.valueOf() === b3.valueOf()) ?? check(is("URL"), (a3, b3) => a3.href === b3.href) ?? check(is("RegExp"), (a3, b3) => a3.source === b3.source && a3.flags === b3.flags) ?? check(isArrayBufferLike, (a3, b3) => {
         if (a3.byteLength !== b3.byteLength) return false;
         const viewA = new Uint8Array(a3);
         const viewB = new Uint8Array(b3);
-        for (let i = 0; i < viewA.length; i++) {
-          if (viewA[i] !== viewB[i]) return false;
-        }
+        for (let i = 0; i < viewA.length; i++) if (viewA[i] !== viewB[i]) return false;
         return true;
-      }) ?? ((!strict || [a2, b2].every((value) => Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null)) && Object.keys({ ...a2, ...b2 }).every((key) => compare(a2[key], b2[key])));
+      }) ?? ((!strict || [a2, b2].every((value) => Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null)) && Object.keys({
+        ...a2,
+        ...b2
+      }).every((key) => compare(a2[key], b2[key])));
     } finally {
       ancestors.delete(a2);
     }
   }
   return compare(a, b);
 }
-
-// ../../../../Users/Admin/.dsh/backups/core-upgrade-20261004-134142/candidate/vendor/cosmokit/src/time.ts
 var Time;
-((Time2) => {
+(function(Time2) {
   Time2.millisecond = 1;
   Time2.second = 1e3;
   Time2.minute = Time2.second * 60;
@@ -2045,27 +2023,18 @@ var Time;
   Time2.parseTime = parseTime;
   function parseDate(date2) {
     const parsed = parseTime(date2);
-    if (parsed) {
-      date2 = Date.now() + parsed;
-    } else if (/^\d{1,2}(:\d{1,2}){1,2}$/.test(date2)) {
-      date2 = `${(/* @__PURE__ */ new Date()).toLocaleDateString()}-${date2}`;
-    } else if (/^\d{1,2}-\d{1,2}-\d{1,2}(:\d{1,2}){1,2}$/.test(date2)) {
-      date2 = `${(/* @__PURE__ */ new Date()).getFullYear()}-${date2}`;
-    }
+    if (parsed) date2 = Date.now() + parsed;
+    else if (/^\d{1,2}(:\d{1,2}){1,2}$/.test(date2)) date2 = `${(/* @__PURE__ */ new Date()).toLocaleDateString()}-${date2}`;
+    else if (/^\d{1,2}-\d{1,2}-\d{1,2}(:\d{1,2}){1,2}$/.test(date2)) date2 = `${(/* @__PURE__ */ new Date()).getFullYear()}-${date2}`;
     return date2 ? new Date(date2) : /* @__PURE__ */ new Date();
   }
   Time2.parseDate = parseDate;
   function format(ms) {
     const abs = Math.abs(ms);
-    if (abs >= Time2.day - Time2.hour / 2) {
-      return Math.round(ms / Time2.day) + "d";
-    } else if (abs >= Time2.hour - Time2.minute / 2) {
-      return Math.round(ms / Time2.hour) + "h";
-    } else if (abs >= Time2.minute - Time2.second / 2) {
-      return Math.round(ms / Time2.minute) + "m";
-    } else if (abs >= Time2.second) {
-      return Math.round(ms / Time2.second) + "s";
-    }
+    if (abs >= Time2.day - Time2.hour / 2) return Math.round(ms / Time2.day) + "d";
+    else if (abs >= Time2.hour - Time2.minute / 2) return Math.round(ms / Time2.hour) + "h";
+    else if (abs >= Time2.minute - Time2.second / 2) return Math.round(ms / Time2.minute) + "m";
+    else if (abs >= Time2.second) return Math.round(ms / Time2.second) + "s";
     return ms + "ms";
   }
   Time2.format = format;
@@ -2079,7 +2048,7 @@ var Time;
   Time2.template = template;
 })(Time || (Time = {}));
 
-// ../../../../Users/Admin/.dsh/backups/core-upgrade-20261004-134142/candidate/vendor/schemastery/lib/index.mjs
+// node_modules/.pnpm/@deepseek-ai+schemastery@3.18.5-alpha.1/node_modules/@deepseek-ai/schemastery/lib/index.mjs
 var kSchema = /* @__PURE__ */ Symbol.for("schemastery");
 var kValidationError = /* @__PURE__ */ Symbol.for("ValidationError");
 globalThis.__schemastery_index__ ??= 0;
@@ -2720,12 +2689,14 @@ defineMethod("transform", [
   "preserve"
 ], ({ inner }, isInner) => inner.toString(isInner));
 
-// ../../../../Users/Admin/.dsh/backups/core-upgrade-20261004-134142/candidate/packages/util/home-paths/lib/index.js
+// node_modules/.pnpm/@deepseek-ai+dsh-home-paths_99ea2d94673a87769445ec669152c2bb/node_modules/@deepseek-ai/dsh-home-paths/lib/index.js
 var import_node_os = require("node:os");
 var import_node_path = require("node:path");
 var DSH_HOME_DIR_NAME = ".dsh";
 var DEFAULT_DSH_HOME_DISPLAY = `~/${DSH_HOME_DIR_NAME}`;
 var DSH_HOME_ENV = "DSH_HOME";
+var AGENTS_HOME_DIR_NAME = ".agents";
+var DEFAULT_AGENTS_HOME_DISPLAY = `~/${AGENTS_HOME_DIR_NAME}`;
 function defaultDshHome() {
   return (0, import_node_path.join)((0, import_node_os.homedir)(), DSH_HOME_DIR_NAME);
 }
@@ -2734,9 +2705,12 @@ function expandHomePath(path) {
   if (path.startsWith("~/") || path.startsWith("~\\")) return (0, import_node_path.join)((0, import_node_os.homedir)(), path.slice(2));
   return path;
 }
+function resolveRoot(configured, env, envName, fallback) {
+  const fromEnv = env[envName];
+  return (0, import_node_path.resolve)(expandHomePath(configured ?? (fromEnv !== void 0 && fromEnv.trim().length > 0 ? fromEnv : fallback())));
+}
 function resolveDshHome(configured, env = process.env) {
-  const fromEnv = env[DSH_HOME_ENV];
-  return (0, import_node_path.resolve)(expandHomePath(configured ?? (fromEnv !== void 0 && fromEnv.trim().length > 0 ? fromEnv : defaultDshHome())));
+  return resolveRoot(configured, env, DSH_HOME_ENV, defaultDshHome);
 }
 function dshHomePath(...segments) {
   return (0, import_node_path.join)(resolveDshHome(), ...segments);
@@ -3210,7 +3184,12 @@ var ProxyController = class {
     this.options = { ...opts.base };
     const persisted = this.settings.read();
     if (persisted.listenPort !== void 0) this.options.listenPort = persisted.listenPort;
-    if (persisted.upstreamPort !== void 0) this.options.upstreamPort = persisted.upstreamPort;
+    if (persisted.upstreamPort !== void 0) {
+      if (opts.upstreamPortSource === "settings") this.options.upstreamPort = persisted.upstreamPort;
+      else if (persisted.upstreamPort !== opts.base.upstreamPort) {
+        this.log("warn", `dsh-proxy: ignoring persisted upstreamPort ${persisted.upstreamPort}; following web server port ${opts.base.upstreamPort}`);
+      }
+    }
     if (persisted.username !== void 0) this.options.username = persisted.username;
     if (persisted.password !== void 0) this.options.password = persisted.password;
   }
@@ -3225,7 +3204,7 @@ var ProxyController = class {
   /** Whether a persisted runtime override exists (drives the status flag). */
   persisted() {
     const current = this.settings.read();
-    return current.listenPort !== void 0 || current.upstreamPort !== void 0 || current.username !== void 0 || current.password !== void 0;
+    return current.listenPort !== void 0 || this.opts.upstreamPortSource === "settings" && current.upstreamPort !== void 0 || current.username !== void 0 || current.password !== void 0;
   }
   /**
    * Start the proxy (idempotent). Listen errors — the port is already taken,
@@ -3382,7 +3361,11 @@ var ProxyController = class {
     );
     if (!check.ok) return { ok: false, message: check.message };
     const patch = check.patch;
+    if (this.opts.upstreamPortSource === "web-server" && patch.upstreamPort !== void 0) {
+      return { ok: false, message: "\u8F6C\u53D1\u76EE\u6807\u81EA\u52A8\u8DDF\u968F DSH \u670D\u52A1\u7AEF\u53E3\uFF1B\u5982\u9700\u56FA\u5B9A\u76EE\u6807\uFF0C\u8BF7\u5728 profile \u4E2D\u663E\u5F0F\u914D\u7F6E upstreamPort\u3002" };
+    }
     const next = { ...this.settings.read(), ...patch };
+    if (this.opts.upstreamPortSource === "web-server") delete next.upstreamPort;
     this.settings.write(next);
     if (patch.listenPort !== void 0) this.options.listenPort = patch.listenPort;
     if (patch.upstreamPort !== void 0) this.options.upstreamPort = patch.upstreamPort;
@@ -3481,13 +3464,14 @@ function apply(ctx, config) {
     ctx.logger[level](message);
   };
   const controller = new ProxyController({
+    upstreamPortSource: resolved.upstreamPort === 0 ? "web-server" : "settings",
     tls: resolved.httpsPort ? { port: resolved.httpsPort, certFile: resolved.tlsCertFile, keyFile: resolved.tlsKeyFile, caFile: resolved.tlsCaFile } : void 0,
     upstreamAuth: connection,
     base: {
       listenHost: resolved.listenHost,
       listenPort: resolved.listenPort,
       upstreamHost: resolved.upstreamHost,
-      upstreamPort: resolved.upstreamPort || ctx.webServer.port || 3080,
+      upstreamPort: resolved.upstreamPort || ctx.webServer.port,
       username: resolved.username,
       password: resolved.password
     },

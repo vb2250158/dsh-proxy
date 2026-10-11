@@ -12,7 +12,7 @@ import type { LanProxyUpdatePayload } from './contract.ts'
 export interface PersistedRuntimeSettings {
   /** Proxy listen port override. */
   listenPort?: number
-  /** Deprecated forward-target override, kept for legacy persisted files. */
+  /** Legacy target override, applied only when the profile specifies a nonzero upstreamPort. */
   upstreamPort?: number
   username?: string
   password?: string

@@ -57,8 +57,8 @@ export interface LanProxyUpdatePayload {
   listenPort?: number
   /**
    * Deprecated: new forward target port, kept so legacy persisted configs
-   * and scripts still apply. The settings page no longer edits it — the
-   * editable port is the proxy's own listen port.
+   * and scripts still apply when the profile specifies a nonzero upstreamPort.
+   * Automatic mode rejects this field. The settings page edits the proxy's own listen port.
    */
   upstreamPort?: number
   /** New login username. */

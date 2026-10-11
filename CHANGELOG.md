@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.17 (2026-10-11)
+
+- Default forwarding follows the DSH web server's actual bound port, including after a port change. Legacy `dsh-proxy.json` target ports no longer override automatic mode; saving settings removes that stale field. Automatic mode rejects target-port RPC updates without changing credentials or restarting.
+- Nonzero profile `upstreamPort` retains explicit target configuration and legacy runtime overrides. See [upgrade notes](docs/dsh-proxy-0.1.17.md).
+- Complete development type dependencies for DSH 0.2.1-alpha.2 and declare esbuild build permission in the pnpm workspace settings.
+- 默认转发跟随 DSH 实际监听端口；旧文件中的目标端口不再覆盖自动模式，保存设置时清除旧字段。自动模式拒绝目标端口修改，手工指定目标继续兼容。
+
 ## 0.1.16 (2026-10-07)
 
 - 缩小图标绘制内容约三分之一，增加方框内的留白。

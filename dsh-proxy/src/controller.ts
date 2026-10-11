@@ -23,6 +23,8 @@ export interface EffectiveProxyOptions {
 }
 
 export interface ProxyControllerOptions {
+  /** Automatic mode uses the web server's bound port; settings mode preserves legacy target overrides. */
+  upstreamPortSource: 'web-server' | 'settings'
   /** Optional HTTPS certificate files; private material never enters status. */
   tls?: { port: number; certFile: string; keyFile: string; caFile: string }
 
@@ -65,7 +67,12 @@ export class ProxyController {
     this.options = { ...opts.base }
     const persisted = this.settings.read()
     if (persisted.listenPort !== undefined) this.options.listenPort = persisted.listenPort
-    if (persisted.upstreamPort !== undefined) this.options.upstreamPort = persisted.upstreamPort
+    if (persisted.upstreamPort !== undefined) {
+      if (opts.upstreamPortSource === 'settings') this.options.upstreamPort = persisted.upstreamPort
+      else if (persisted.upstreamPort !== opts.base.upstreamPort) {
+        this.log('warn', `dsh-proxy: ignoring persisted upstreamPort ${persisted.upstreamPort}; following web server port ${opts.base.upstreamPort}`)
+      }
+    }
     if (persisted.username !== undefined) this.options.username = persisted.username
     if (persisted.password !== undefined) this.options.password = persisted.password
   }
@@ -74,7 +81,7 @@ export class ProxyController {
   private persisted(): boolean {
     const current = this.settings.read()
     return current.listenPort !== undefined
-      || current.upstreamPort !== undefined
+      || (this.opts.upstreamPortSource === 'settings' && current.upstreamPort !== undefined)
       || current.username !== undefined
       || current.password !== undefined
   }
@@ -244,8 +251,12 @@ export class ProxyController {
     )
     if (!check.ok) return { ok: false, message: check.message }
     const patch = check.patch as LanProxyUpdatePayload
+    if (this.opts.upstreamPortSource === 'web-server' && patch.upstreamPort !== undefined) {
+      return { ok: false, message: '转发目标自动跟随 DSH 服务端口；如需固定目标，请在 profile 中显式配置 upstreamPort。' }
+    }
 
     const next: LanProxyUpdatePayload = { ...this.settings.read(), ...patch }
+    if (this.opts.upstreamPortSource === 'web-server') delete next.upstreamPort
     this.settings.write(next)
 
     if (patch.listenPort !== undefined) this.options.listenPort = patch.listenPort

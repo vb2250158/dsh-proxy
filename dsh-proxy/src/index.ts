@@ -47,7 +47,7 @@ export interface Config {
   listenPort: number
   /** Upstream DSH bind host. */
   upstreamHost: string
-  /** Upstream DSH port; 0 follows the web app's actual bound port. */
+  /** Upstream DSH port; 0 follows the bound web port and ignores saved target overrides. */
   upstreamPort: number
   /** Login / Basic Auth username; password login is enabled only when both it and `password` are set. */
   username: string
@@ -83,13 +83,14 @@ export function apply(ctx: Context, config?: Config): void {
     ctx.logger[level](message)
   }
   const controller = new ProxyController({
+    upstreamPortSource: resolved.upstreamPort === 0 ? 'web-server' : 'settings',
     tls: resolved.httpsPort ? { port: resolved.httpsPort, certFile: resolved.tlsCertFile, keyFile: resolved.tlsKeyFile, caFile: resolved.tlsCaFile } : undefined,
     upstreamAuth: connection as unknown as import('./upstream-auth.ts').UpstreamAuth,
     base: {
       listenHost: resolved.listenHost,
       listenPort: resolved.listenPort,
       upstreamHost: resolved.upstreamHost,
-      upstreamPort: resolved.upstreamPort || ctx.webServer.port || 3080,
+      upstreamPort: resolved.upstreamPort || ctx.webServer.port,
       username: resolved.username,
       password: resolved.password,
     },

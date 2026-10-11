@@ -32,7 +32,7 @@ export interface Config {
     listenPort: number;
     /** Upstream DSH bind host. */
     upstreamHost: string;
-    /** Upstream DSH port; 0 follows the web app's actual bound port. */
+    /** Upstream DSH port; 0 follows the bound web port and ignores saved target overrides. */
     upstreamPort: number;
     /** Login / Basic Auth username; password login is enabled only when both it and `password` are set. */
     username: string;

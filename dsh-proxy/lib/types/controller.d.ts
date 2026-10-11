@@ -9,6 +9,8 @@ export interface EffectiveProxyOptions {
     password: string;
 }
 export interface ProxyControllerOptions {
+    /** Automatic mode uses the web server's bound port; settings mode preserves legacy target overrides. */
+    upstreamPortSource: 'web-server' | 'settings';
     /** Optional HTTPS certificate files; private material never enters status. */
     tls?: {
         port: number;

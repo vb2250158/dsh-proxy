@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import type { AddressInfo } from 'node:net'
@@ -62,9 +62,73 @@ afterEach(async () => {
   for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true })
 })
 
+describe('ProxyController automatic upstream port', () => {
+  it('ignores a legacy target and follows the web server across launches', async () => {
+    const oldPort = await startUpstream('OLD')
+    const firstPort = await startUpstream('FIRST')
+    const secondPort = await startUpstream('SECOND')
+    const settingsFile = tempSettingsFile()
+    writeFileSync(settingsFile, JSON.stringify({ upstreamPort: oldPort, username: 'bob', password: 'pw' }))
+
+    for (const [port, marker] of [[firstPort, 'FIRST'], [secondPort, 'SECOND']] as const) {
+      controller = new ProxyController({
+        upstreamPortSource: 'web-server', base: baseOptions(port), settingsFile,
+        log: (_level, message) => logs.push(message),
+      })
+      await controller.start()
+      const status = await controller.refreshStatus()
+      expect(status.upstreamPort).toBe(port)
+      expect(status.upstreamReachable).toBe(true)
+      const response = await fetchThrough(`http://127.0.0.1:${status.listenPort}/`, { authorization: basic('bob', 'pw') })
+      expect(response).toEqual({ status: 200, text: marker })
+      await controller.stop()
+    }
+    expect(logs.some(message => message.includes('ignoring persisted upstreamPort'))).toBe(true)
+  })
+
+  it('rejects target overrides without saving or restarting in automatic mode', async () => {
+    const port = await startUpstream('CURRENT')
+    const otherPort = await startUpstream('OTHER')
+    const settingsFile = tempSettingsFile()
+    const original = JSON.stringify({ username: 'admin', password: 'admin' })
+    writeFileSync(settingsFile, original)
+    controller = new ProxyController({ upstreamPortSource: 'web-server', base: baseOptions(port), settingsFile, log: () => {} })
+    await controller.start()
+    const before = controller.status()
+    const outcome = await controller.update({ upstreamPort: otherPort, username: 'changed' })
+    expect(outcome.ok).toBe(false)
+    expect(readFileSync(settingsFile, 'utf8')).toBe(original)
+    expect(controller.status()).toEqual(before)
+    const response = await fetchThrough(`http://127.0.0.1:${before.listenPort}/`, { authorization: basic('admin', 'admin') })
+    expect(response).toEqual({ status: 200, text: 'CURRENT' })
+  })
+
+  it('drops the legacy target when saving other settings in automatic mode', async () => {
+    const port = await startUpstream('CURRENT')
+    const settingsFile = tempSettingsFile()
+    writeFileSync(settingsFile, JSON.stringify({ upstreamPort: port + 1, username: 'admin', password: 'admin' }))
+    controller = new ProxyController({ upstreamPortSource: 'web-server', base: baseOptions(port), settingsFile, log: () => {} })
+    const outcome = await controller.update({ username: 'bob' })
+    expect(outcome.ok).toBe(true)
+    expect(controller.status().upstreamPort).toBe(port)
+    expect(JSON.parse(readFileSync(settingsFile, 'utf8'))).toEqual({ username: 'bob', password: 'admin' })
+  })
+
+  it('preserves legacy target overrides when an explicit target is configured', async () => {
+    const port = await startUpstream('CURRENT')
+    const explicitPort = await startUpstream('EXPLICIT')
+    const settingsFile = tempSettingsFile()
+    writeFileSync(settingsFile, JSON.stringify({ upstreamPort: explicitPort }))
+    controller = new ProxyController({ upstreamPortSource: 'settings', base: baseOptions(port), settingsFile, log: () => {} })
+    await controller.start()
+    const response = await fetchThrough(`http://127.0.0.1:${controller.status().listenPort}/`, { authorization: basic('admin', 'admin') })
+    expect(response).toEqual({ status: 200, text: 'EXPLICIT' })
+  })
+})
+
 describe('ProxyController status', () => {
   it('does not expose the Host when integrated login credentials are missing', async () => {
-    controller = new ProxyController({
+    controller = new ProxyController({ upstreamPortSource: 'settings',
       base: { ...baseOptions(1), password: '' },
       settingsFile: tempSettingsFile(), log: () => {},
       upstreamAuth: { authenticatedUrl: origin => origin, authorizeIndex: () => false },
@@ -74,7 +138,7 @@ describe('ProxyController status', () => {
   })
   it('starts and reports the bound port and effective options', async () => {
     const upstreamPort = await startUpstream('A')
-    controller = new ProxyController({
+    controller = new ProxyController({ upstreamPortSource: 'settings',
       base: baseOptions(upstreamPort),
       settingsFile: tempSettingsFile(),
       log: (level, message) => logs.push(`${level}:${message}`),
@@ -109,7 +173,7 @@ describe('ProxyController status', () => {
     const deadPort = (probe.address() as AddressInfo).port
     await new Promise<void>((resolve) => probe.close(() => resolve()))
 
-    controller = new ProxyController({
+    controller = new ProxyController({ upstreamPortSource: 'settings',
       base: { ...baseOptions(deadPort), listenPort: takenPort },
       settingsFile: tempSettingsFile(),
       log: () => {},
@@ -124,7 +188,7 @@ describe('ProxyController status', () => {
 describe('ProxyController update', () => {
   it('changes the proxy listen port and rebinds the service', async () => {
     const upstreamPort = await startUpstream('UPSTREAM')
-    controller = new ProxyController({ base: baseOptions(upstreamPort), settingsFile: tempSettingsFile(), log: () => {} })
+    controller = new ProxyController({ upstreamPortSource: 'settings', base: baseOptions(upstreamPort), settingsFile: tempSettingsFile(), log: () => {} })
     await controller.start()
     const oldPort = controller.status().listenPort
 
@@ -158,7 +222,7 @@ describe('ProxyController update', () => {
 
   it('rotates credentials and restarts', async () => {
     const upstreamPort = await startUpstream('UPSTREAM')
-    controller = new ProxyController({
+    controller = new ProxyController({ upstreamPortSource: 'settings',
       base: baseOptions(upstreamPort),
       settingsFile: tempSettingsFile(),
       log: () => {},
@@ -181,7 +245,7 @@ describe('ProxyController update', () => {
 
   it('disables password login when credentials are cleared to empty (set-empty semantics)', async () => {
     const upstreamPort = await startUpstream('UPSTREAM')
-    controller = new ProxyController({
+    controller = new ProxyController({ upstreamPortSource: 'settings',
       base: baseOptions(upstreamPort),
       settingsFile: tempSettingsFile(),
       log: () => {},
@@ -219,14 +283,14 @@ describe('ProxyController update', () => {
     const fixedPort = (probe.address() as AddressInfo).port
     await new Promise<void>((resolve) => probe.close(() => resolve()))
 
-    controller = new ProxyController({ base: baseOptions(upstreamPort), settingsFile, log: () => {} })
+    controller = new ProxyController({ upstreamPortSource: 'settings', base: baseOptions(upstreamPort), settingsFile, log: () => {} })
     await controller.start()
     const out = await controller.update({ listenPort: fixedPort, username: 'bob', password: 'pw' })
     expect(out.ok).toBe(true)
     await controller.stop()
     controller = null
 
-    const restarted = new ProxyController({ base: baseOptions(upstreamPort), settingsFile, log: () => {} })
+    const restarted = new ProxyController({ upstreamPortSource: 'settings', base: baseOptions(upstreamPort), settingsFile, log: () => {} })
     controller = restarted
     await restarted.start()
     const status = restarted.status()
@@ -239,7 +303,7 @@ describe('ProxyController update', () => {
 
   it('rejects invalid patches without touching the running proxy', async () => {
     const upstreamPort = await startUpstream('A')
-    controller = new ProxyController({ base: baseOptions(upstreamPort), settingsFile: tempSettingsFile(), log: () => {} })
+    controller = new ProxyController({ upstreamPortSource: 'settings', base: baseOptions(upstreamPort), settingsFile: tempSettingsFile(), log: () => {} })
     await controller.start()
     const before = controller.status()
 
@@ -261,7 +325,7 @@ describe('ProxyController update', () => {
   it('reports a failed rebind after save when the new listen port is taken', async () => {
     const upstreamPort = await startUpstream('A')
     const settingsFile = tempSettingsFile()
-    controller = new ProxyController({ base: baseOptions(upstreamPort), settingsFile, log: () => {} })
+    controller = new ProxyController({ upstreamPortSource: 'settings', base: baseOptions(upstreamPort), settingsFile, log: () => {} })
     await controller.start()
 
     // Reserve a concrete port and keep it occupied so the proxy cannot rebind.
@@ -291,7 +355,7 @@ describe('ProxyController update', () => {
     await new Promise<void>((resolve) => blocker.listen(0, '127.0.0.1', resolve))
     const takenPort = (blocker.address() as AddressInfo).port
 
-    controller = new ProxyController({
+    controller = new ProxyController({ upstreamPortSource: 'settings',
       base: { ...baseOptions(upstreamPort), listenPort: takenPort },
       settingsFile,
       log: () => {},
@@ -323,7 +387,7 @@ describe('ProxyController start failure', () => {
     await new Promise<void>((resolve) => blocker.listen(0, '127.0.0.1', resolve))
     const takenPort = (blocker.address() as AddressInfo).port
 
-    controller = new ProxyController({
+    controller = new ProxyController({ upstreamPortSource: 'settings',
       base: { ...baseOptions(upstreamPort), listenPort: takenPort },
       settingsFile: tempSettingsFile(),
       log: (level, message) => logs.push(`${level}:${message}`),
@@ -340,7 +404,7 @@ describe('ProxyController start failure', () => {
 describe('ProxyController start/stop controls', () => {
   it('stops and restarts the service, keeping the target probe independent', async () => {
     const upstreamPort = await startUpstream('A')
-    controller = new ProxyController({ base: baseOptions(upstreamPort), settingsFile: tempSettingsFile(), log: () => {} })
+    controller = new ProxyController({ upstreamPortSource: 'settings', base: baseOptions(upstreamPort), settingsFile: tempSettingsFile(), log: () => {} })
     await controller.start()
     expect(controller.status().proxyListening).toBe(true)
 
@@ -355,7 +419,7 @@ describe('ProxyController start/stop controls', () => {
 
   it('stopDeferred reports stopped immediately and closes the listener shortly after', async () => {
     const upstreamPort = await startUpstream('A')
-    controller = new ProxyController({ base: baseOptions(upstreamPort), settingsFile: tempSettingsFile(), log: () => {} })
+    controller = new ProxyController({ upstreamPortSource: 'settings', base: baseOptions(upstreamPort), settingsFile: tempSettingsFile(), log: () => {} })
     await controller.start()
     const status = controller.stopDeferred(0)
     expect(status.lanUrls).toEqual([])

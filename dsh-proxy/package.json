@@ -1,7 +1,7 @@
 {
   "name": "@smanx/dsh-proxy",
   "description": "LAN reverse proxy for the DeepSeek Harness web app: forwards the local DSH port to a second, authenticated port (HTTP + WebSocket) with a web-based login page and a Basic Auth fallback.",
-  "version": "0.1.13",
+  "version": "0.1.17",
   "license": "MIT",
   "type": "module",
   "main": "lib/index.cjs",
@@ -64,12 +64,12 @@
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "4.0.5-alpha.1",
-    "@deepseek-ai/dsh-client-connection": "0.2.1-alpha.1",
-    "@deepseek-ai/dsh-client-locale": "0.2.1-alpha.1",
-    "@deepseek-ai/dsh-client-ui-settings": "0.2.1-alpha.1",
-    "@deepseek-ai/dsh-client-ui-slots": "0.2.1-alpha.1",
-    "@deepseek-ai/dsh-home-paths": "0.2.1-alpha.1",
-    "@deepseek-ai/dsh-host-webserver": "0.2.1-alpha.1",
+    "@deepseek-ai/dsh-client-connection": "0.2.1-alpha.2",
+    "@deepseek-ai/dsh-client-locale": "0.2.1-alpha.2",
+    "@deepseek-ai/dsh-client-ui-settings": "0.2.1-alpha.2",
+    "@deepseek-ai/dsh-client-ui-slots": "0.2.1-alpha.2",
+    "@deepseek-ai/dsh-home-paths": "0.2.1-alpha.2",
+    "@deepseek-ai/dsh-host-webserver": "0.2.1-alpha.2",
     "@deepseek-ai/schemastery": "3.18.5-alpha.1",
     "@types/http-proxy": "^1.17.15",
     "@types/node": "^24.0.0",
@@ -85,11 +85,11 @@
     "selfsigned": "^5.5.0",
     "typescript": "^6.0.3",
     "vitest": "^4.1.8",
-    "ws": "^8.18.0"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild"
-    ]
+    "ws": "^8.18.0",
+    "@deepseek-ai/dsh-client-ui-plugin-manager": "0.2.1-alpha.2",
+    "@deepseek-ai/dsh-api-remotes": "0.2.1-alpha.2",
+    "@deepseek-ai/dsh-api-session-controller": "0.2.1-alpha.2",
+    "@deepseek-ai/dsh-client-ui-renderer": "0.2.1-alpha.2",
+    "@deepseek-ai/dsh-client-ui-session": "0.2.1-alpha.2"
   }
 }
