@@ -5,6 +5,8 @@ English | [中文](README.md)
 An HTTP + WebSocket reverse proxy that forwards a LAN port to the local DSH service `127.0.0.1:3080`.
 Supports Basic Auth, LAN access, and `crypto.randomUUID` polyfill injection.
 
+The maintenance fork uses DSH 0.2's Fetch registry with caller ownership and browser authentication; it does not restore the older Connection registration API.
+
 ## DSH plugin (recommended · dsh-proxy)
 
 **Recommended for DSH (DeepSeek Harness) users**: install the proxy as a plugin into the web profile — it **starts and stops with `dsh web`**, no separate process or downloadable binary needed, with a full settings page.

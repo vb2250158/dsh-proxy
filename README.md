@@ -7,6 +7,8 @@ This release requires DSH 0.2.1-alpha.1 or a compatible 0.2 release. See [compat
 HTTP + WebSocket 反向代理：把局域网端口转发到本地 DSH 服务 `127.0.0.1:3080`。
 支持 Basic Auth、局域网访问、`crypto.randomUUID` polyfill 注入。
 
+本维护版使用 DSH 0.2 Fetch 注册及调用者归属校验，并保留浏览器认证；合并旧版上游时继续使用当前接口。
+
 ## DSH 插件版（推荐 · dsh-proxy）
 
 **推荐 DSH（DeepSeek Harness）用户使用**：把代理作为插件装进 web profile，**随 `dsh web` 启停**，无需单独进程、无需下载可执行文件，带完整设置页面。

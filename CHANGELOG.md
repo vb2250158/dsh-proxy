@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.18 (2026-10-20)
+
+- Reconcile upstream owner-registration and trust documentation with the newer DSH 0.2 Fetch registry implementation. Keep caller ownership, browser authentication, automatic upstream-port selection and existing LAN configuration. Rebuild host/client artifacts.
+- 对照上游注册与访问校验更新，保留已迁移的 DSH 0.2 Fetch 接口、调用者归属、浏览器认证和自动端口跟随。
+
 ## 0.1.17 (2026-10-11)
 
 - Default forwarding follows the DSH web server's actual bound port, including after a port change. Legacy `dsh-proxy.json` target ports no longer override automatic mode; saving settings removes that stale field. Automatic mode rejects target-port RPC updates without changing credentials or restarting.
