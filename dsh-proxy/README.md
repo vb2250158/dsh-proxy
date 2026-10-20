@@ -98,7 +98,7 @@ pnpm run smoke   # full live smoke test against a running DSH on 127.0.0.1:3080
 
 ## Host browser authentication (0.1.4)
 
-The plugin uses the Host Connection public browser-auth API after successful Basic Auth. The generated upstream cookie remains server-side and is never returned to remote browsers. HTTP and WebSocket forwarding share this exchange. The current Host must provide authenticatedUrl and authorizeIndex. Existing local port and login settings remain unchanged.
+The plugin uses the Host Connection public browser-auth API after successful Basic Auth. The generated upstream cookie remains server-side and is never returned to remote browsers. A new LAN browser needs only the proxy Basic Auth login; no separate launch-token retry option is required. HTTP and WebSocket forwarding share this exchange. The current Host must provide authenticatedUrl and authorizeIndex. Existing local port and login settings remain unchanged.
 
 The integrated proxy refuses to listen until both username and password are configured in local settings.
 

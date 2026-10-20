@@ -39,9 +39,20 @@ function baseOptions(upstreamPort: number): EffectiveProxyOptions {
   }
 }
 
+/** OS-assigned test ports may fall in Fetch's reserved list on a custom ephemeral range. */
 async function fetchThrough(url: string, headers: Record<string, string> = {}): Promise<{ status: number; text: string }> {
-  const res = await fetch(url, { headers, redirect: 'manual' })
-  return { status: res.status, text: await res.text() }
+  return new Promise((resolve, reject) => {
+    const request = http.get(url, { headers }, response => {
+      const status = response.statusCode
+      if (status === undefined) { response.resume(); reject(new Error('Missing proxy response status')); return }
+      let text = ''
+      response.setEncoding('utf8')
+      response.on('data', (chunk: string) => { text += chunk })
+      response.on('error', reject)
+      response.on('end', () => resolve({ status, text }))
+    })
+    request.on('error', reject)
+  })
 }
 
 beforeEach(() => {
@@ -259,6 +270,9 @@ describe('ProxyController update', () => {
     expect(cleared.result.status.authEnabled).toBe(false)
     expect(cleared.result.status.username).toBe('')
     expect(cleared.result.status.password).toBe('')
+    expect(cleared.result.notice, cleared.result.message).toBe('saved-restarted')
+    expect(cleared.result.status.proxyListening).toBe(true)
+    expect(cleared.result.status.listenPort).toBeGreaterThan(0)
 
     // The gate is open again: an anonymous request passes through.
     const anon = await fetchThrough(`http://127.0.0.1:${cleared.result.status.listenPort}/`)

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.19 (2026-10-21)
+
+- Integrate the upstream first-visit authentication review with the existing Host-owned cookie exchange. Keep the DSH 0.2 Fetch routes, Basic Auth gate, HTTP/WebSocket access, and server-only credentials; no duplicate launch-token retry or older Connection registration is introduced.
+- 对照上游首次访问认证更新，保留现有宿主端 Cookie 交换、DSH 0.2 Fetch 接口、Basic Auth 与 HTTP/WebSocket 访问；认证凭据仍只留在服务端，不引入重复的启动令牌重试或旧版 Connection 注册。
+
+- Controller tests use the HTTP client for OS-assigned ports, including ports the Fetch standard reserves. Runtime authentication and browser behavior remain unchanged.
+- 控制器测试通过 HTTP 客户端访问系统分配的端口，覆盖 Fetch 标准保留端口；运行认证及浏览器行为保持不变。
+
 ## 0.1.18 (2026-10-20)
 
 - Reconcile upstream owner-registration and trust documentation with the newer DSH 0.2 Fetch registry implementation. Keep caller ownership, browser authentication, automatic upstream-port selection and existing LAN configuration. Rebuild host/client artifacts.
