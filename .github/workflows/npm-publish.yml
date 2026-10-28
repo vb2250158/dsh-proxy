@@ -1,0 +1,143 @@
+name: npm Publish
+
+# 推送 v* 标签（如 v0.1.5）时，把 DSH 插件版（仓库根的 @smanx/dsh-proxy）发布到 npm。
+# 与 Release 工作流共用同一套标签：Release 负责 go/ 与 node/ 的独立可执行文件，
+# 这里只负责插件包本身，两者互不依赖、各自成败。
+#
+# 需要配置的 Secret（仓库 Settings → Secrets and variables → Actions）：
+#   NPM_TOKEN —— npmjs 上的 Granular Access Token（只勾选本包的 Read/Write，
+#   或 Automation 类型），它绕过账号 2FA；不要用个人密码登录得到的 _authToken。
+#
+# 发布走 npm 的 provenance：需要 id-token: write 权限，产物会记录「哪个仓库、
+# 哪个标签、哪次运行」，安装方 `npm audit signatures` 可验证。
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '发布版本号（仅手动触发时使用，如 v0.1.5）'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+  id-token: write # npm provenance 需要 OIDC
+
+# 同一时刻只允许一次发布，避免重跑或并发标签互相抢版本。
+concurrency:
+  group: npm-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: 发布 @smanx/dsh-proxy 到 npm
+    if: github.repository == 'smanx/dsh-proxy'
+    runs-on: ubuntu-latest
+    env:
+      PACKAGE: '@smanx/dsh-proxy'
+      REGISTRY: 'https://registry.npmjs.org'
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: 安装 Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: ${{ env.REGISTRY }} # 让 npm 认 NODE_AUTH_TOKEN
+
+      - name: 计算本次版本号
+        id: version
+        run: |
+          # 标签触发用标签名（去 v 前缀）；手动触发用输入的 version。
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            RAW="${{ github.event.inputs.version }}"
+          else
+            RAW="${GITHUB_REF_NAME}"
+          fi
+          VERSION="${RAW#v}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "本次要发布的版本：$VERSION"
+
+      - name: 校验标签与清单版本一致
+        run: |
+          # 版本以仓库里的 package.json 为准：CI 从不改写清单，只核对。
+          # 不一致说明打标签时忘了先 `npm version`，直接失败，免得发出错号。
+          ROOT=$(node -p "require('./package.json').version")
+          INNER=$(node -p "require('./dsh-proxy/package.json').version")
+          WANT="${{ steps.version.outputs.version }}"
+          if [ "$ROOT" != "$WANT" ] || [ "$INNER" != "$WANT" ]; then
+            echo "::error::版本不一致：标签 v$WANT，根 package.json $ROOT，插件 package.json $INNER。请先同步版本再打标签。"
+            exit 1
+          fi
+          echo "清单版本一致：$ROOT"
+
+      - name: 检查该版本是否已发布
+        id: already
+        run: |
+          # 重跑安全：已存在的版本不再重复发布（npm 不允许覆盖同一版本）。
+          if npm view "$PACKAGE@${{ steps.version.outputs.version }}" version \
+               --registry "$REGISTRY" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "::$PACKAGE@${{ steps.version.outputs.version }} 已在 npm 上，跳过发布。"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 安装依赖并跑完整检查
+        if: steps.already.outputs.exists == 'false'
+        working-directory: dsh-proxy
+        run: pnpm install --frozen-lockfile && pnpm run check
+
+      - name: 报告已提交产物与 CI 构建的差异
+        if: steps.already.outputs.exists == 'false'
+        run: |
+          # 打包发布用的是工作树，也就是上一步刚从源码重建出来的 dsh-proxy/lib/，
+          # 所以发布内容始终与本次标签的源码一致——这比"作者本地提交的产物"更强。
+          # 已提交的 lib/ 只是 github:/file: 直装路径的便利产物；它与 Linux 上的
+          # 重建结果不必逐字节相同（本次实测差异在 index.cjs 与两个 .map），
+          # 因此这里只报告，不拦发布。
+          if git diff --quiet -- dsh-proxy/lib; then
+            echo "已提交的 dsh-proxy/lib 与 CI 构建一致"
+          else
+            echo "::warning::已提交的 dsh-proxy/lib 与本次 CI 重建不同，发布使用重建结果：$(git diff --name-only -- dsh-proxy/lib | tr '\n' ' ')"
+          fi
+
+      - name: 打印将要发布的包内容
+        if: steps.already.outputs.exists == 'false'
+        run: npm pack --dry-run 2>&1 | tail -n 40
+
+      - name: 发布到 npm
+        if: steps.already.outputs.exists == 'false'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          # 缺这个密钥时 npm 会拿一个空的 _authToken 去发，报的是一个和真正原因
+          # （Secret 没配）无关的 401，所以先把这种情况点名说清楚。
+          if [ -z "$NODE_AUTH_TOKEN" ]; then
+            echo "::error::仓库密钥 NPM_TOKEN 不存在或为空（Settings → Secrets and variables → Actions），无法认证到 npm"
+            exit 1
+          fi
+          set +e
+          npm publish --access public --provenance --registry "$REGISTRY" 2>&1 | tee npm-publish.log
+          CODE=${PIPESTATUS[0]}
+          set -e
+          if [ "$CODE" -ne 0 ]; then
+            # 日志需要登录才能读，注解不需要。npm 的报错在输出末尾，且开头一大段是
+            # pack 通知，所以去掉通知再取尾部，压成一行注解。
+            TAIL=$(grep -v '^npm notice' npm-publish.log | tail -n 12 | tr '\n\r' '  ' | tr -s ' ' | cut -c1-460)
+            echo "::error::npm publish 失败（exit $CODE）：$TAIL"
+            exit "$CODE"
+          fi
+
+      # 没有回读步骤：npm publish 的退出码就是发布成败的唯一权威信号。
+      # registry/CDN 会把新包的 404 缓存数分钟，任何发布后的 GET（npm view、
+      # 甚至 /latest）都可能读到假的 404——0.1.5、0.1.6 两次实测都是如此，
+      # 回读只会把已经成功的发布染红。

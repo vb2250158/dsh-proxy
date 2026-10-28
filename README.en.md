@@ -121,3 +121,7 @@ The plugin list shows **Network proxy** in English and **网络代理** in Chine
 Open this plugin from the Plugins list to access its existing configuration and controls. Settings no longer duplicates its navigation entry.
 
 The icon uses a centered 36 × 36 viewBox to leave more space around the artwork inside the plugin icon frame.
+
+## Upstream integration (0.1.20)
+
+Includes upstream 0.1.7 release metadata, licensing and controller HTTP fixture corrections. The maintained fork keeps Host-owned upstream-only cookie authentication, Basic Auth, WebSocket forwarding and current DSH rc.3 APIs. This replaces the original launch-token URL exchange. The fork is delivered through fixed Git commits and does not publish the original npm package name.

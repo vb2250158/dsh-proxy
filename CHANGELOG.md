@@ -1,3 +1,9 @@
+## 0.1.20
+
+- Merge upstream 0.1.7 licensing and release metadata; retain maintained Host-owned authentication and current APIs.
+- Adopt the upstream-merged controller fixture port fix; keep upstream-token URL exchange retired.
+- 合入上游 0.1.7 许可与发布资料，保留维护版 Host 认证及现有接口；采用已上游合并的控制器测试端口修正，继续退役启动令牌 URL 交换。
+
 # Changelog
 
 ## 0.1.19 (2026-10-21)

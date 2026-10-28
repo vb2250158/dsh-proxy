@@ -223,7 +223,7 @@ describe('ProxyController update', () => {
     // The old OS-assigned listener is gone.
     let oldStatus = 0
     try {
-      const r = await fetch(`http://127.0.0.1:${oldPort}/`, { redirect: 'manual' })
+      const r = await fetchThrough(`http://127.0.0.1:${oldPort}/`)
       oldStatus = r.status
     } catch {
       oldStatus = 0

@@ -34,9 +34,9 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 ));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// node_modules/.pnpm/eventemitter3@4.0.7/node_modules/eventemitter3/index.js
+// node_modules/eventemitter3/index.js
 var require_eventemitter3 = __commonJS({
-  "node_modules/.pnpm/eventemitter3@4.0.7/node_modules/eventemitter3/index.js"(exports2, module2) {
+  "node_modules/eventemitter3/index.js"(exports2, module2) {
     "use strict";
     var has = Object.prototype.hasOwnProperty;
     var prefix = "~";
@@ -196,9 +196,9 @@ var require_eventemitter3 = __commonJS({
   }
 });
 
-// node_modules/.pnpm/requires-port@1.0.0/node_modules/requires-port/index.js
+// node_modules/requires-port/index.js
 var require_requires_port = __commonJS({
-  "node_modules/.pnpm/requires-port@1.0.0/node_modules/requires-port/index.js"(exports2, module2) {
+  "node_modules/requires-port/index.js"(exports2, module2) {
     "use strict";
     module2.exports = function required(port, protocol) {
       protocol = protocol.split(":")[0];
@@ -223,9 +223,9 @@ var require_requires_port = __commonJS({
   }
 });
 
-// node_modules/.pnpm/http-proxy@1.18.1/node_modules/http-proxy/lib/http-proxy/common.js
+// node_modules/http-proxy/lib/http-proxy/common.js
 var require_common = __commonJS({
-  "node_modules/.pnpm/http-proxy@1.18.1/node_modules/http-proxy/lib/http-proxy/common.js"(exports2) {
+  "node_modules/http-proxy/lib/http-proxy/common.js"(exports2) {
     var common = exports2;
     var url = require("url");
     var extend2 = require("util")._extend;
@@ -333,9 +333,9 @@ var require_common = __commonJS({
   }
 });
 
-// node_modules/.pnpm/http-proxy@1.18.1/node_modules/http-proxy/lib/http-proxy/passes/web-outgoing.js
+// node_modules/http-proxy/lib/http-proxy/passes/web-outgoing.js
 var require_web_outgoing = __commonJS({
-  "node_modules/.pnpm/http-proxy@1.18.1/node_modules/http-proxy/lib/http-proxy/passes/web-outgoing.js"(exports2, module2) {
+  "node_modules/http-proxy/lib/http-proxy/passes/web-outgoing.js"(exports2, module2) {
     var url = require("url");
     var common = require_common();
     var redirectRegex = /^201|30(1|2|7|8)$/;
@@ -454,9 +454,9 @@ var require_web_outgoing = __commonJS({
   }
 });
 
-// node_modules/.pnpm/ms@2.0.0/node_modules/ms/index.js
+// node_modules/ms/index.js
 var require_ms = __commonJS({
-  "node_modules/.pnpm/ms@2.0.0/node_modules/ms/index.js"(exports2, module2) {
+  "node_modules/ms/index.js"(exports2, module2) {
     var s = 1e3;
     var m = s * 60;
     var h = m * 60;
@@ -556,9 +556,9 @@ var require_ms = __commonJS({
   }
 });
 
-// node_modules/.pnpm/debug@2.6.9/node_modules/debug/src/debug.js
+// node_modules/debug/src/debug.js
 var require_debug = __commonJS({
-  "node_modules/.pnpm/debug@2.6.9/node_modules/debug/src/debug.js"(exports2, module2) {
+  "node_modules/debug/src/debug.js"(exports2, module2) {
     exports2 = module2.exports = createDebug.debug = createDebug["default"] = createDebug;
     exports2.coerce = coerce;
     exports2.disable = disable;
@@ -661,9 +661,9 @@ var require_debug = __commonJS({
   }
 });
 
-// node_modules/.pnpm/debug@2.6.9/node_modules/debug/src/browser.js
+// node_modules/debug/src/browser.js
 var require_browser = __commonJS({
-  "node_modules/.pnpm/debug@2.6.9/node_modules/debug/src/browser.js"(exports2, module2) {
+  "node_modules/debug/src/browser.js"(exports2, module2) {
     exports2 = module2.exports = require_debug();
     exports2.log = log;
     exports2.formatArgs = formatArgs;
@@ -747,9 +747,9 @@ var require_browser = __commonJS({
   }
 });
 
-// node_modules/.pnpm/debug@2.6.9/node_modules/debug/src/node.js
+// node_modules/debug/src/node.js
 var require_node = __commonJS({
-  "node_modules/.pnpm/debug@2.6.9/node_modules/debug/src/node.js"(exports2, module2) {
+  "node_modules/debug/src/node.js"(exports2, module2) {
     var tty = require("tty");
     var util = require("util");
     exports2 = module2.exports = require_debug();
@@ -867,9 +867,9 @@ var require_node = __commonJS({
   }
 });
 
-// node_modules/.pnpm/debug@2.6.9/node_modules/debug/src/index.js
+// node_modules/debug/src/index.js
 var require_src = __commonJS({
-  "node_modules/.pnpm/debug@2.6.9/node_modules/debug/src/index.js"(exports2, module2) {
+  "node_modules/debug/src/index.js"(exports2, module2) {
     if (typeof process !== "undefined" && process.type === "renderer") {
       module2.exports = require_browser();
     } else {
@@ -878,9 +878,9 @@ var require_src = __commonJS({
   }
 });
 
-// node_modules/.pnpm/follow-redirects@1.16.0/node_modules/follow-redirects/debug.js
+// node_modules/follow-redirects/debug.js
 var require_debug2 = __commonJS({
-  "node_modules/.pnpm/follow-redirects@1.16.0/node_modules/follow-redirects/debug.js"(exports2, module2) {
+  "node_modules/follow-redirects/debug.js"(exports2, module2) {
     var debug;
     module2.exports = function() {
       if (!debug) {
@@ -898,9 +898,9 @@ var require_debug2 = __commonJS({
   }
 });
 
-// node_modules/.pnpm/follow-redirects@1.16.0/node_modules/follow-redirects/index.js
+// node_modules/follow-redirects/index.js
 var require_follow_redirects = __commonJS({
-  "node_modules/.pnpm/follow-redirects@1.16.0/node_modules/follow-redirects/index.js"(exports2, module2) {
+  "node_modules/follow-redirects/index.js"(exports2, module2) {
     var url = require("url");
     var URL2 = url.URL;
     var http2 = require("http");
@@ -1128,8 +1128,14 @@ var require_follow_redirects = __commonJS({
     RedirectableRequest.prototype._sanitizeOptions = function(options) {
       if (!options.headers) {
         options.headers = {};
+      } else if (Array.isArray(options.headers)) {
+        var headerList = options.headers;
+        options.headers = {};
+        for (var i = 0; i < headerList.length; i += 2) {
+          options.headers[headerList[i]] = headerList[i + 1];
+        }
       }
-      if (!isArray(options.sensitiveHeaders)) {
+      if (!Array.isArray(options.sensitiveHeaders)) {
         options.sensitiveHeaders = [];
       }
       if (options.host) {
@@ -1386,9 +1392,6 @@ var require_follow_redirects = __commonJS({
       var dot = subdomain.length - domain.length - 1;
       return dot > 0 && subdomain[dot] === "." && subdomain.endsWith(domain);
     }
-    function isArray(value) {
-      return value instanceof Array;
-    }
     function isString(value) {
       return typeof value === "string" || value instanceof String;
     }
@@ -1402,16 +1405,16 @@ var require_follow_redirects = __commonJS({
       return URL2 && value instanceof URL2;
     }
     function escapeRegex(regex) {
-      return regex.replace(/[\]\\/()*+?.$]/g, "\\$&");
+      return regex.replace(/[[\]\\/()*+?.^$|]/g, "\\$&");
     }
     module2.exports = wrap({ http: http2, https: https2 });
     module2.exports.wrap = wrap;
   }
 });
 
-// node_modules/.pnpm/http-proxy@1.18.1/node_modules/http-proxy/lib/http-proxy/passes/web-incoming.js
+// node_modules/http-proxy/lib/http-proxy/passes/web-incoming.js
 var require_web_incoming = __commonJS({
-  "node_modules/.pnpm/http-proxy@1.18.1/node_modules/http-proxy/lib/http-proxy/passes/web-incoming.js"(exports2, module2) {
+  "node_modules/http-proxy/lib/http-proxy/passes/web-incoming.js"(exports2, module2) {
     var httpNative = require("http");
     var httpsNative = require("https");
     var web_o = require_web_outgoing();
@@ -1559,9 +1562,9 @@ var require_web_incoming = __commonJS({
   }
 });
 
-// node_modules/.pnpm/http-proxy@1.18.1/node_modules/http-proxy/lib/http-proxy/passes/ws-incoming.js
+// node_modules/http-proxy/lib/http-proxy/passes/ws-incoming.js
 var require_ws_incoming = __commonJS({
-  "node_modules/.pnpm/http-proxy@1.18.1/node_modules/http-proxy/lib/http-proxy/passes/ws-incoming.js"(exports2, module2) {
+  "node_modules/http-proxy/lib/http-proxy/passes/ws-incoming.js"(exports2, module2) {
     var http2 = require("http");
     var https2 = require("https");
     var common = require_common();
@@ -1673,9 +1676,9 @@ var require_ws_incoming = __commonJS({
   }
 });
 
-// node_modules/.pnpm/http-proxy@1.18.1/node_modules/http-proxy/lib/http-proxy/index.js
+// node_modules/http-proxy/lib/http-proxy/index.js
 var require_http_proxy = __commonJS({
-  "node_modules/.pnpm/http-proxy@1.18.1/node_modules/http-proxy/lib/http-proxy/index.js"(exports2, module2) {
+  "node_modules/http-proxy/lib/http-proxy/index.js"(exports2, module2) {
     var httpProxy2 = module2.exports;
     var extend2 = require("util")._extend;
     var parse_url = require("url").parse;
@@ -1790,9 +1793,9 @@ var require_http_proxy = __commonJS({
   }
 });
 
-// node_modules/.pnpm/http-proxy@1.18.1/node_modules/http-proxy/lib/http-proxy.js
+// node_modules/http-proxy/lib/http-proxy.js
 var require_http_proxy2 = __commonJS({
-  "node_modules/.pnpm/http-proxy@1.18.1/node_modules/http-proxy/lib/http-proxy.js"(exports2, module2) {
+  "node_modules/http-proxy/lib/http-proxy.js"(exports2, module2) {
     var ProxyServer = require_http_proxy().Server;
     function createProxyServer(options) {
       return new ProxyServer(options);
@@ -1804,9 +1807,9 @@ var require_http_proxy2 = __commonJS({
   }
 });
 
-// node_modules/.pnpm/http-proxy@1.18.1/node_modules/http-proxy/index.js
+// node_modules/http-proxy/index.js
 var require_http_proxy3 = __commonJS({
-  "node_modules/.pnpm/http-proxy@1.18.1/node_modules/http-proxy/index.js"(exports2, module2) {
+  "node_modules/http-proxy/index.js"(exports2, module2) {
     module2.exports = require_http_proxy2();
   }
 });
@@ -1823,7 +1826,7 @@ __export(index_exports, {
 });
 module.exports = __toCommonJS(index_exports);
 
-// node_modules/.pnpm/@deepseek-ai+cosmokit@1.8.6-alpha.1/node_modules/@deepseek-ai/cosmokit/lib/index.js
+// node_modules/@deepseek-ai/cosmokit/lib/index.js
 function isNullable(value) {
   return value === null || value === void 0;
 }
@@ -2048,7 +2051,7 @@ var Time;
   Time2.template = template;
 })(Time || (Time = {}));
 
-// node_modules/.pnpm/@deepseek-ai+schemastery@3.18.5-alpha.1/node_modules/@deepseek-ai/schemastery/lib/index.mjs
+// node_modules/@deepseek-ai/schemastery/lib/index.mjs
 var kSchema = /* @__PURE__ */ Symbol.for("schemastery");
 var kValidationError = /* @__PURE__ */ Symbol.for("ValidationError");
 globalThis.__schemastery_index__ ??= 0;
@@ -2689,7 +2692,7 @@ defineMethod("transform", [
   "preserve"
 ], ({ inner }, isInner) => inner.toString(isInner));
 
-// node_modules/.pnpm/@deepseek-ai+dsh-home-paths_99ea2d94673a87769445ec669152c2bb/node_modules/@deepseek-ai/dsh-home-paths/lib/index.js
+// node_modules/@deepseek-ai/dsh-home-paths/lib/index.js
 var import_node_os = require("node:os");
 var import_node_path = require("node:path");
 var DSH_HOME_DIR_NAME = ".dsh";

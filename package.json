@@ -1,7 +1,7 @@
 {
   "name": "@smanx/dsh-proxy",
-  "description": "DSH plugin (scoped package @smanx/dsh-proxy, matching the repository): LAN reverse proxy with native Basic Auth and a settings page. Source lives in this repo's dsh-proxy/ subdirectory; this root package makes the plugin installable from the repository itself (git/github: specs install the root).",
-  "version": "0.1.19",
+  "description": "LAN reverse proxy for DeepSeek Harness with native Basic Auth, Host-owned upstream authentication and HTTP/WebSocket forwarding.",
+  "version": "0.1.20",
   "license": "MIT",
   "type": "module",
   "main": "dsh-proxy/lib/index.cjs",
@@ -60,5 +60,20 @@
     "@deepseek-ai/dsh-client-ui-session": ">=0.2.1-alpha.1 <0.3.0",
     "@deepseek-ai/dsh-client-ui-plugin-manager": ">=0.2.1-alpha.1 <0.3.0"
   },
-  "icon": "./icon.svg"
+  "icon": "./icon.svg",
+  "author": "smanx",
+  "homepage": "https://github.com/vb2250158/dsh-proxy#readme",
+  "bugs": {
+    "url": "https://github.com/vb2250158/dsh-proxy/issues"
+  },
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "dsh-plugin",
+    "cordis",
+    "reverse-proxy",
+    "lan",
+    "basic-auth",
+    "websocket"
+  ]
 }

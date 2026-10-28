@@ -121,3 +121,7 @@ The plugin list shows **Network proxy** in English and **网络代理** in Chine
 在插件列表中点击本插件进入详情页，即可使用原有配置和操作界面；设置菜单不再重复显示该插件入口。
 
 The icon uses a centered 36 × 36 viewBox to leave more space around the artwork inside the plugin icon frame.
+
+## 上游同步（0.1.20）
+
+已合入上游 0.1.7 的发布资料、许可与 HTTP 控制器测试修正。维护版继续由 Host 的公开认证 API 提供仅上游可见的 Cookie，不向客户端 URL 追加启动令牌；Basic Auth、WebSocket 转发与现有 DSH rc.3 接口保持原行为。上游的启动令牌自动登录实现由此替代。维护 fork 通过固定 Git 提交交付，不发布原作者的 npm 包名。
