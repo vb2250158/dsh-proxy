@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Netzwerkproxy",
+    "description": "Über einen Netzwerkproxy mit Authentifizierung auf das lokale DSH zugreifen."
+  }
+}

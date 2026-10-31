@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Proxy de red",
+    "description": "Accede al DSH local mediante un proxy de red con autenticación."
+  }
+}
